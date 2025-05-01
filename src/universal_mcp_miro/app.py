@@ -24,7 +24,7 @@ class MiroApp(APIApplication):
         Tags:
             revoke, token, management, important
         """
-        path = ""
+        path = "/v1/oauth/revoke"
         url = f"{self.base_url}{path}"
         query_params = {
                 "access_token": access_token,
@@ -50,7 +50,7 @@ class MiroApp(APIApplication):
         Tags:
             access, tokens, information, important
         """
-        path = ""
+        path = "/v1/oauth-token"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
@@ -77,7 +77,7 @@ class MiroApp(APIApplication):
         Tags:
             audit-logs, paginated, async-job, management, important
         """
-        path = ""
+        path = "/v2/audit/logs"
         url = f"{self.base_url}{path}"
         query_params = {
                 "createdAfter": createdAfter,
@@ -91,9 +91,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_organization_settings(self, ) -> Any:
+    def get_organization_settings(self, org_id: Annotated[str, '(Required) id of the organization']) -> Any:
         """
         Retrieve organization settings including board classification configurations. Intended for Enterprise plan users with Company Admin role.
+        
+        Args:
+            org_id: ID of the organization.
         
         Returns:
             Dictionary containing organization settings data from the API response
@@ -104,18 +107,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, organization-settings, enterprise, management, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/data-classification-settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def bulk_update_boards_classification(self, labelId: Annotated[float, ''] = None, notClassifiedOnly: Annotated[bool, ''] = None) -> Any:
+    def bulk_update_boards_classification(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], labelId: Annotated[float, ''] = None, notClassifiedOnly: Annotated[bool, ''] = None) -> Any:
         """
         Bulk updates board classification for either not-classified boards only or all boards in a team, depending on the provided parameters.
         
         Args:
+            org_id: ID of the organization.
+            team_id: ID of the team.
             labelId: The ID of the label to apply for classification. Defaults to None.
             notClassifiedOnly: A flag indicating whether to classify only not-classified boards. Defaults to None.
         
@@ -133,16 +138,20 @@ class MiroApp(APIApplication):
             "notClassifiedOnly": notClassifiedOnly,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/data-classification"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team_settings(self, ) -> Any:
+    def get_team_settings(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team']) -> Any:
         """
         Retrieves board classification settings for an existing team. Requires enterprise-level access and company admin privileges.
+        
+        Args:
+            org_id: ID of the organization.
+            team_id: ID of the team.
         
         Returns:
             Parsed JSON response containing team-level board classification settings.
@@ -153,18 +162,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, team-settings, board-classification, enterprise, management, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team_settings(self, defaultLabelId: Annotated[float, ''] = None, enabled: Annotated[bool, ''] = None) -> Any:
+    def update_team_settings(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], defaultLabelId: Annotated[float, ''] = None, enabled: Annotated[bool, ''] = None) -> Any:
         """
         Updates team settings, specifically board classification settings for an existing team.
         
         Args:
+            org_id: ID of the organization.
+            team_id: ID of the team.
             defaultLabelId: Optional float specifying the default label ID.
             enabled: Optional boolean indicating whether the setting is enabled.
         
@@ -182,19 +193,21 @@ class MiroApp(APIApplication):
             "enabled": enabled,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_board_classification(self, ) -> Any:
+    def get_board_classification(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], board_id: Annotated[str, '(Required) Unique identifier of the board that you want to update.']) -> Any:
         """
         Retrieve board classification details for an associated board. This endpoint is restricted to Enterprise plan users with Company Admin privileges.
         
         Args:
-            None: This method does not accept parameters
+            org_id: ID of the organization.
+            team_id: ID of the team.
+            board_id: Unique identifier of the board.
         
         Returns:
             Response dictionary containing board classification data as returned by the Miro API
@@ -206,18 +219,21 @@ class MiroApp(APIApplication):
         Tags:
             board-classification, enterprise, api, important, board-management
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_board_classification(self, labelId: Annotated[Any, ''] = None) -> Any:
+    def update_board_classification(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], board_id: Annotated[str, '(Required) Unique identifier of the board that you want to update.'], labelId: Annotated[Any, ''] = None) -> Any:
         """
         Updates the classification label for an existing board by modifying its label ID.
         
         Args:
+            org_id: ID of the organization.
+            team_id: ID of the team.
+            board_id: Unique identifier of the board.
             labelId: (Any) Identifier of the classification label to apply. Use None to remove existing classification.
         
         Returns:
@@ -233,18 +249,19 @@ class MiroApp(APIApplication):
             "labelId": labelId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_cases(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None, limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None) -> Any:
+    def get_all_cases(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the list of cases.'], limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None) -> Any:
         """
         Retrieves a paginated list of eDiscovery cases in an organization, supporting cursor-based pagination.
         
         Args:
+            org_id: The ID of the organization.
             cursor: An indicator of pagination position. Leave empty for first page, use returned cursor from previous request for subsequent pages.
             limit: Maximum number of items to return in the result list (required for pagination).
         
@@ -257,7 +274,7 @@ class MiroApp(APIApplication):
         Tags:
             list, pagination, legal-holds, ediscovery, management, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/cases"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -268,12 +285,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_case(self, ) -> Any:
+    def get_case(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the case information.'], case_id: Annotated[str, '(Required) The ID of the case you want to retrieve.']) -> Any:
         """
         Retrieves case information from the organization, including details relevant to legal holds. This function requires specific permissions and is only available to Enterprise Guard users with both Company Admin and eDiscovery Admin roles.
         
         Args:
-            : None
+            org_id: The ID of the organization.
+            case_id: The ID of the case.
         
         Returns:
             A dictionary containing case details retrieved from the API response.
@@ -284,18 +302,20 @@ class MiroApp(APIApplication):
         Tags:
             legal-holds, case-management, enterprise-guard, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/cases/{case_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_legal_holds_within_acase(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None, limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None) -> Any:
+    def get_all_legal_holds_within_acase(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the list of legal holds within a case.'], case_id: Annotated[str, '(Required) The ID of the case for which you want to retrieve the list of legal holds.'], limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None) -> Any:
         """
         Retrieves a paginated list of all legal holds within a case for an organization, supporting cursor-based pagination.
         
         Args:
+            org_id: The ID of the organization.
+            case_id: The ID of the case.
             cursor: An indicator of the position of a page in the full set of results. Leave empty to retrieve the first page. Provide the cursor value from the previous response to fetch subsequent pages.
             limit: (Required) The maximum number of items to include in the result list.
         
@@ -308,7 +328,7 @@ class MiroApp(APIApplication):
         Tags:
             legal-holds, pagination, list, async-job, important, ediscovery, management
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/cases/{case_id}/legal-holds"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -319,12 +339,14 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_legal_hold_information(self, ) -> Any:
+    def get_legal_hold_information(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the legal hold information.'], case_id: Annotated[str, '(Required) The ID of the case for which you want to retrieve the legal hold information.'], legal_hold_id: Annotated[str, '(Required) The ID of the legal hold you want to retrieve.']) -> Any:
         """
         Retrieve legal hold information for a case within an organization.
         
         Args:
-            None: This function takes no parameters.
+            org_id: The ID of the organization.
+            case_id: The ID of the case.
+            legal_hold_id: The ID of the legal hold.
         
         Returns:
             A JSON object containing legal hold information.
@@ -335,18 +357,21 @@ class MiroApp(APIApplication):
         Tags:
             legal-hold, management, organization, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_content_items_under_legal_hold(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None, limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None) -> Any:
+    def get_content_items_under_legal_hold(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the list of content items under hold.'], case_id: Annotated[str, '(Required) The ID of the case for which you want to retrieve the list of content items under hold.'], legal_hold_id: Annotated[str, '(Required) The ID of the legal hold for which you want to retrieve the list of content items under hold.'], limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None) -> Any:
         """
         Fetches content items under legal hold for review or exploration purposes.
         
         Args:
+            org_id: The ID of the organization.
+            case_id: The ID of the case.
+            legal_hold_id: The ID of the legal hold.
             cursor: An indicator of the position of a page in the full set of results. To obtain the first page, leave it empty. To obtain subsequent pages, set it to the value returned in the cursor field of the previous request.
             limit: The maximum number of items in the result list.
         
@@ -359,7 +384,7 @@ class MiroApp(APIApplication):
         Tags:
             review, legal-hold, management, important, enterprise
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}/content-items"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -370,11 +395,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_board_export_job(self, boardFormat: Annotated[Any, ''] = None, boardIds: Annotated[list[Any], ''] = None, request_id: Annotated[Any, '(Required) Unique identifier of the board export job.'] = None) -> Any:
+    def create_board_export_job(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], request_id: Annotated[Any, '(Required) Unique identifier of the board export job.'] = None, boardFormat: Annotated[Any, ''] = None, boardIds: Annotated[list[Any], ''] = None) -> Any:
         """
         Creates an export job for one or more boards using the specified format and identifiers.
         
         Args:
+            org_id: Unique identifier of the organization.
             boardFormat: Optional format for the board export.
             boardIds: Optional list of IDs of boards to export.
             request_id: Unique identifier for the board export job, required for tracking purposes.
@@ -393,7 +419,7 @@ class MiroApp(APIApplication):
             "boardIds": boardIds,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/boards/export/jobs"
         url = f"{self.base_url}{path}"
         query_params = {
                 "request_id": request_id,
@@ -403,12 +429,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_board_export_job_status(self, ) -> Any:
+    def get_board_export_job_status(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], job_id: Annotated[str, '(Required) Unique identifier of the board export job.']) -> Any:
         """
         Retrieve the status of a board export job, including completion state and any relevant metadata.
         
         Args:
-            None: This function takes no parameters.
+            org_id: Unique identifier of the organization.
+            job_id: Unique identifier of the board export job.
         
         Returns:
             A JSON response containing the job status details and metadata, typically including fields like 'status', 'createdAt', and 'downloadUrl'.
@@ -420,19 +447,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, status-check, board-export, async-job, enterprise, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/boards/export/jobs/{job_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_results_for_board_export_job(self, ) -> Any:
+    def get_results_for_board_export_job(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], job_id: Annotated[str, '(Required) Unique identifier of the job.']) -> Any:
         """
         Retrieves the results of a board export job, providing information such as the S3 link to exported files.
         
         Args:
-            None: This function does not accept any parameters.
+            org_id: Unique identifier of the organization.
+            job_id: Unique identifier of the job.
         
         Returns:
             The result of the board export job in JSON format.
@@ -443,24 +471,26 @@ class MiroApp(APIApplication):
         Tags:
             export, enterprise, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/boards/export/jobs/{job_id}/results"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def retrieve_content_change_logs_of_board_items(self, board_ids: Annotated[Any, 'List of board IDs for which you want to retrieve the content logs.'] = None, cursor: Annotated[Any, 'A cursor-paginated method returns a portion of the total set of results based on the limit specified and a cursor that points to the next portion of the results. To retrieve the next portion of the collection, set the cursor parameter equal to the cursor value you received in the response of the previous request.\n'] = None, emails: Annotated[Any, 'Filter content logs based on the list of emails of users who created, modified, or deleted the board item.'] = None, limit: Annotated[Any, 'The maximum number of results to return per call. If the number of logs in the response is greater than the limit specified, the response returns the cursor parameter with a value.\n'] = None, sorting: Annotated[Any, 'Sort order in which you want to view the result set based on the modified date. To sort by an ascending modified date, specify `asc`. To sort by a descending modified date, specify `desc`.\n'] = None, to: Annotated[Any, '(Required) Filter content logs based on the date and time when the board item was last modified. This is the end date and time for the modified date duration. Format: UTC, adheres to\n[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), includes a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC)).\n'] = None) -> Any:
+    def retrieve_content_change_logs_of_board_items(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], from_timestamp: Annotated[Any, '(Required) Filter content logs based on the date and time when the board item was last modified. This is the start date and time for the modified date duration.\nFormat: UTC, adheres to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), includes a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC)).\n'], to_timestamp: Annotated[Any, '(Required) Filter content logs based on the date and time when the board item was last modified. This is the end date and time for the modified date duration. Format: UTC, adheres to\n[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), includes a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC)).\n'], board_ids: Annotated[Any, 'List of board IDs for which you want to retrieve the content logs.'] = None, emails: Annotated[Any, 'Filter content logs based on the list of emails of users who created, modified, or deleted the board item.'] = None, cursor: Annotated[Any, 'A cursor-paginated method returns a portion of the total set of results based on the limit specified and a cursor that points to the next portion of the results. To retrieve the next portion of the collection, set the cursor parameter equal to the cursor value you received in the response of the previous request.\n'] = None, limit: Annotated[Any, 'The maximum number of results to return per call. If the number of logs in the response is greater than the limit specified, the response returns the cursor parameter with a value.\n'] = None, sorting: Annotated[Any, 'Sort order in which you want to view the result set based on the modified date. To sort by an ascending modified date, specify `asc`. To sort by a descending modified date, specify `desc`.\n'] = None) -> Any:
         """
         Retrieve content change logs for board items, including actions like updates and deletions, filtered by boards, users, and time range with pagination support.
         
         Args:
+            org_id: Unique identifier of the organization.
+            from_timestamp: Start datetime for filtering modified items (UTC ISO 8601 format with trailing Z). Required parameter.
+            to_timestamp: End datetime for filtering modified items (UTC ISO 8601 format with trailing Z). Required parameter.
             board_ids: List of board IDs for which to retrieve content logs. Multiple IDs can be specified.
-            cursor: Cursor for pagination. Use the value from previous response to retrieve next results.
             emails: Filter logs by email addresses of users who modified board items.
+            cursor: Cursor for pagination. Use the value from previous response to retrieve next results.
             limit: Maximum number of logs to return per request. Pagination required if exceeded.
             sorting: Sort order by modification date: 'asc' for ascending or 'desc' for descending.
-            to: End datetime for filtering modified items (UTC ISO 8601 format with trailing Z). Required parameter.
         
         Returns:
             Response JSON containing paginated content change logs and cursor for subsequent requests.
@@ -471,12 +501,13 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, logs, board, paginated, enterprise, content-management, async_job, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/content-logs/items"
         url = f"{self.base_url}{path}"
         query_params = {
                 "board_ids": board_ids,
                 "emails": emails,
-                "to": to,
+                "from": from_timestamp,
+                "to": to_timestamp,
                 "cursor": cursor,
                 "limit": limit,
                 "sorting": sorting,
@@ -502,7 +533,7 @@ class MiroApp(APIApplication):
         Tags:
             reset, session-management, security, async, important
         """
-        path = ""
+        path = "/v2/sessions/reset_all"
         url = f"{self.base_url}{path}"
         query_params = {
                 "email": email,
@@ -512,12 +543,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_organization_info(self, ) -> Any:
+    def get_organization_info(self, org_id: Annotated[str, '(Required) id of the organization']) -> Any:
         """
         Retrieves organization information from the Miro API, including details available only to Enterprise plan users with Company Admin role.
         
         Args:
-            None: This function does not take additional parameters beyond the class instance.
+            org_id: ID of the organization.
         
         Returns:
             dict: Parsed JSON response containing organization details from the Miro API.
@@ -528,18 +559,19 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, organizations, api, enterprise-only, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_organization_members(self, active: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None, emails: Annotated[Any, ''] = None, license: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
+    def get_organization_members(self, org_id: Annotated[str, '(Required) id of the organization'], emails: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None, license: Annotated[Any, ''] = None, active: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves organization members based on specified criteria like emails or cursor.
         
         Args:
+            org_id: ID of the organization.
             active: Optional parameter to filter by active status.
             cursor: Optional cursor for pagination.
             emails: Optional list of emails to filter members.
@@ -556,7 +588,7 @@ class MiroApp(APIApplication):
         Tags:
             organization, members, fetch, enterprise, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {
                 "emails": emails,
@@ -571,9 +603,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_organization_member(self, ) -> Any:
+    def get_organization_member(self, org_id: Annotated[str, '(Required) id of the organization'], member_id: Annotated[str, '(Required) id of the organization member']) -> Any:
         """
         Retrieves organization member information from the Miro API with Company Admin permissions.
+        
+        Args:
+            org_id: ID of the organization.
+            member_id: ID of the organization member.
         
         Returns:
             Dict[str, Any]: JSON response containing organization member details
@@ -584,14 +620,14 @@ class MiroApp(APIApplication):
         Tags:
             organization-members, management, enterprise, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_boards(self, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None, owner: Annotated[Any, ''] = None, project_id: Annotated[Any, ''] = None, query: Annotated[Any, ''] = None, sort: Annotated[Any, ''] = None, team_id: Annotated[Any, ''] = None) -> Any:
+    def get_boards(self, team_id: Annotated[Any, ''] = None, project_id: Annotated[Any, ''] = None, query: Annotated[Any, ''] = None, owner: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None, sort: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves a list of boards accessible to the user, allowing filtering by team, project, and other parameters.
         
@@ -613,7 +649,7 @@ class MiroApp(APIApplication):
         Tags:
             boards, list, filter, pagination, async_job, management, important
         """
-        path = ""
+        path = "/v2/boards"
         url = f"{self.base_url}{path}"
         query_params = {
                 "team_id": team_id,
@@ -656,7 +692,7 @@ class MiroApp(APIApplication):
             "teamId": teamId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = "/v2/boards"
         url = f"{self.base_url}{path}"
         query_params = {
                 "copy_from": copy_from,
@@ -694,19 +730,19 @@ class MiroApp(APIApplication):
             "teamId": teamId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = "/v2/boards"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_board(self, ) -> Any:
+    def get_specific_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that you want to delete.']) -> Any:
         """
         Retrieves information about a specific board from the Miro API.
         
         Args:
-            None: This function does not take parameters.
+            board_id: Unique identifier (ID) of the board.
         
         Returns:
             A JSON object containing board data returned by the API.
@@ -717,16 +753,19 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, board, api, boards-read, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_board(self, ) -> Any:
+    def delete_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that you want to delete.']) -> Any:
         """
         Deletes a board, moving it to the trash where it can be restored within 90 days.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
         
         Returns:
             The JSON response from the deletion request
@@ -737,18 +776,19 @@ class MiroApp(APIApplication):
         Tags:
             delete, board, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_board(self, description: Annotated[Any, ''] = None, name: Annotated[Any, ''] = None, policy: Annotated[dict[str, Any], ''] = None, projectId: Annotated[Any, ''] = None, teamId: Annotated[Any, ''] = None) -> Any:
+    def update_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that you want to delete.'], description: Annotated[Any, ''] = None, name: Annotated[Any, ''] = None, policy: Annotated[dict[str, Any], ''] = None, projectId: Annotated[Any, ''] = None, teamId: Annotated[Any, ''] = None) -> Any:
         """
         Updates a specific board by modifying its description, name, policy, project ID, or team ID.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             description: The new description for the board.
             name: The new name for the board.
             policy: The new policy for the board, represented as a dictionary.
@@ -772,18 +812,19 @@ class MiroApp(APIApplication):
             "teamId": teamId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_app_card_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates an app card item and adds it to a Miro board, constructing the request from provided parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing app card content and metadata (e.g., custom fields)
             geometry: Dictionary specifying dimensions and shape of the app card
             parent: Dictionary identifying the parent element/container for the app card
@@ -807,16 +848,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/app_cards"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_app_card_item(self, ) -> Any:
+    def get_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific app card item on a Miro board.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             Dictionary containing the app card item data, or None if unavailable (depends on API response structure)
@@ -827,19 +872,20 @@ class MiroApp(APIApplication):
         Tags:
             app-cards, retrieve, api-client, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/app_cards/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_app_card_item(self, ) -> Any:
+    def delete_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes an app card item from a board, requiring the boards:write scope and subject to rate limiting at Level 3.
         
         Args:
-            None: This function does not take any arguments.
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            item_id: Unique identifier (ID) of the item that you want to delete.
         
         Returns:
             The JSON response from the server after deletion.
@@ -850,18 +896,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, app-cards, boards-management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/app_cards/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_app_card_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates an app card item's properties including data, geometry, parent relationship, position, and style on a Miro board.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Dictionary containing app card data properties to update
             geometry: Dictionary specifying geometric properties like dimensions
             parent: Dictionary defining parent item relationships
@@ -885,18 +933,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/app_cards/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_card_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a new card item and adds it to a Miro board with specified properties.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing card-specific data (content/metadata) [1]
             geometry: Dictionary defining card dimensions and shape characteristics [1]
             parent: Dictionary specifying parent item/container for the card [1]
@@ -921,19 +970,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/cards"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_card_item(self, ) -> Any:
+    def get_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific card item on a board
         
         Args:
-            None: This function does not take any parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             The JSON response containing card item information
@@ -945,19 +995,20 @@ class MiroApp(APIApplication):
         Tags:
             important, card, boards, read, information
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/cards/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_card_item(self, ) -> Any:
+    def delete_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes a card item from the Miro board.
         
         Args:
-            None: This function does not take any explicit parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             JSON response from the server after deletion.
@@ -968,18 +1019,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, card, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/cards/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_card_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a card item on a board based on the provided data and style properties.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: A dictionary containing data properties for the card item.
             geometry: A dictionary defining the geometry of the card item.
             parent: A dictionary specifying the parent item or container.
@@ -1003,18 +1056,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/cards/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_connectors(self, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None) -> Any:
+    def get_connectors(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a list of connectors.'], limit: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves a list of connectors for a specific board using a cursor-based approach.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: Cursor value for pagination, used to retrieve the next portion of results.
             limit: Maximum number of connectors to return in the response.
         
@@ -1027,7 +1081,7 @@ class MiroApp(APIApplication):
         Tags:
             connectors, board, pagination, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/connectors"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -1038,11 +1092,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_connector(self, captions: Annotated[list[Any], ''] = None, endItem: Annotated[dict[str, Any], ''] = None, shape: Annotated[Any, ''] = None, startItem: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a list of connectors.'], captions: Annotated[list[Any], ''] = None, endItem: Annotated[dict[str, Any], ''] = None, shape: Annotated[Any, ''] = None, startItem: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a connector on a board by sending a POST request with specified parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             captions: List of captions for the connector.
             endItem: Dictionary representing the end item of the connector.
             shape: Shape of the connector.
@@ -1066,19 +1121,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/connectors"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_connector(self, ) -> Any:
+    def get_specific_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the connector.'], connector_id: Annotated[str, '(Required) Unique identifier (ID) of the connector that you want to delete.']) -> Any:
         """
         Retrieves information for a specific connector on a board.
         
         Args:
-            None: This function does not accept any arguments.
+            board_id: Unique identifier (ID) of the board.
+            connector_id: Unique identifier (ID) of the connector.
         
         Returns:
             A JSON response containing the information about the specific connector.
@@ -1089,38 +1145,44 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, connectors, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/connectors/{connector_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_connector(self, ) -> Any:
+    def delete_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the connector.'], connector_id: Annotated[str, '(Required) Unique identifier (ID) of the connector that you want to delete.']) -> Any:
         """
-        Error generating docstring: 1 validation error for DocstringOutput
-        args
-          Input should be a valid dictionary [type=dict_type, input_value='None', input_type=str]
-            For further information visit https://errors.pydantic.dev/2.11/v/dict_type
+        Deletes the specified connector from the board.
         
         Args:
-            None: This function takes no arguments
+            board_id: Unique identifier (ID) of the board.
+            connector_id: Unique identifier (ID) of the connector.
+        
+        Returns:
+            The JSON response from the server after deletion.
+        
+        Raises:
+            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
         
         Tags:
-            generation-error
+            delete, connectors, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/connectors/{connector_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_connector(self, captions: Annotated[list[Any], ''] = None, endItem: Annotated[dict[str, Any], ''] = None, shape: Annotated[Any, ''] = None, startItem: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the connector.'], connector_id: Annotated[str, '(Required) Unique identifier (ID) of the connector that you want to delete.'], captions: Annotated[list[Any], ''] = None, endItem: Annotated[dict[str, Any], ''] = None, shape: Annotated[Any, ''] = None, startItem: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a connector's properties on a board including captions, end/start items, shape, and style. Applies provided changes and returns updated connector data.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            connector_id: Unique identifier (ID) of the connector.
             captions: List of captions to update on the connector (None preserves existing values)
             endItem: Dictionary defining the end item properties (None preserves existing values)
             shape: Updated connector shape specification (None preserves existing value)
@@ -1144,18 +1206,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/connectors/{connector_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_document_item_using_url(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_document_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Create a document item on a board using a URL, adding it with specified data, geometry, position, and parent relationships.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             data: Dictionary containing document URL and metadata (Annotated as dict[str, Any])
             geometry: Dictionary defining dimensions and visual properties of the item (Annotated as dict[str, Any])
             parent: Dictionary specifying parent item relationships (Annotated as dict[str, Any])
@@ -1177,16 +1240,20 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/documents"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_document_item(self, ) -> Any:
+    def get_document_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
-        Retrieves information for a specific document item from a Miro board.
+        Retrieves information for a specific document item on a board
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             Parsed JSON response containing the document item details.
@@ -1197,16 +1264,20 @@ class MiroApp(APIApplication):
         Tags:
             get, document, board, rest-api, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/documents/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_document_item(self, ) -> Any:
+    def delete_document_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes a document item from the board, requiring a specific scope and rate limit tier.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            item_id: Unique identifier (ID) of the item that you want to delete.
         
         Returns:
             Parsed JSON response containing the result of the deletion operation
@@ -1217,18 +1288,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, management, documents, board, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/documents/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_document_item_using_url(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_document_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a document item using a URL by sending a PATCH request with the provided data, geometry, parent, and position.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Dictionary containing data to update. Default is None.
             geometry: Dictionary containing geometry to update. Default is None.
             parent: Dictionary containing parent information to update. Default is None.
@@ -1250,18 +1323,19 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/documents/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_document_item_using_file_from_device(self, request_body: Annotated[Any, ''] = None) -> Any:
+    def create_document_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], request_body: Annotated[Any, ''] = None) -> Any:
         """
         Creates a document item on a board by uploading a file from the user's device.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             request_body: Data containing file details and board specifications (format not explicitly documented)
         
         Returns:
@@ -1274,19 +1348,21 @@ class MiroApp(APIApplication):
             create, document, file-upload, async_job, management, important
         """
         request_body = request_body
-        path = ""
+        path = f"/v2/boards/{board_id}/documents"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_document_item_using_file_from_device(self, request_body: Annotated[Any, ''] = None) -> Any:
+    def update_document_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to update the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to update.'], request_body: Annotated[Any, ''] = None) -> Any:
         """
         Updates a document item on a Miro board using a file from a connected device. Requires boards:write scope.
         
         Args:
-            request_body: Annotated dictionary containing file data and board/document identifiers for the update operation (type and structure determined by Miro API requirements).
+            board_id: Unique identifier (ID) of the board where you want to update the item.
+            item_id: Unique identifier (ID) of the item that you want to update.
+            request_body: Payload containing image data and configuration (type and structure determined by Miro API specifications)
         
         Returns:
             Dict containing updated document metadata from Miro API response
@@ -1298,18 +1374,19 @@ class MiroApp(APIApplication):
             update, document, file-upload, async_job, management, boards:write, important
         """
         request_body = request_body
-        path = ""
+        path = f"/v2/boards/{board_id}/documents/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_embed_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates an embed item to add external content to a Miro board. Requires boards:write scope and adheres to Level 2 rate limiting.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing embed item data. Represents the external content's configuration.
             geometry: Dictionary specifying dimensions (width/height) and optional transformations for the embed item.
             parent: Dictionary identifying the parent element (e.g., frame) to which this embed item belongs. Optional.
@@ -1331,22 +1408,23 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/embeds"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_embed_item(self, ) -> Any:
+    def get_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific embed item on a board.
         
         Args:
-            None: This function does not take any arguments.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
-            The embed item information in JSON format.
+            JSON data containing embed item information.
         
         Raises:
             HTTPError: Raised if the HTTP request returns an unsuccessful status code.
@@ -1354,16 +1432,20 @@ class MiroApp(APIApplication):
         Tags:
             embeds, read, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/embeds/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_embed_item(self, ) -> Any:
+    def delete_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Delete an embed item from a board.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            item_id: Unique identifier (ID) of the item that you want to delete.
         
         Returns:
             JSON response containing deletion confirmation or data from the API.
@@ -1374,18 +1456,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, embeds, management, api, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/embeds/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_embed_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates an embed item on a Miro board with specified properties, including data, geometry, parent relationships, and positioning.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Dictionary containing data properties to update for the embed item (e.g., metadata, content).
             geometry: Dictionary defining the embed item's dimensions and shape (e.g., height, width).
             parent: Dictionary specifying parent item relationships or containment details.
@@ -1407,18 +1491,19 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/embeds/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_image_item_using_url(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_image_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates an image item on a Miro board using a URL, adding the image to the board with specified data and positioning.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing image data (e.g., URL and metadata)
             geometry: Dictionary defining the image dimensions and geometric properties
             parent: Dictionary specifying the parent item or container for the image
@@ -1440,16 +1525,20 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/images"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_image_item(self, ) -> Any:
+    def get_image_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific image item on a board.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             JSON data containing image item information.
@@ -1460,19 +1549,20 @@ class MiroApp(APIApplication):
         Tags:
             images, read, board, fetch, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/images/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_image_item(self, ) -> Any:
+    def delete_image_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes an image item from the board.
         
         Args:
-            None: This function does not accept any arguments.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             JSON response from the server after deleting the image item.
@@ -1483,18 +1573,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, image-management, boards, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/images/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_image_item_using_url(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_image_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates an image item on a Miro board using URL, modifying its data, geometry, parent, or position.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Optional dictionary containing image data. Must comply with Miro's API requirements for image items.
             geometry: Optional dictionary specifying image dimensions (width/height) and optional transformations.
             parent: Optional dictionary identifying the parent element where the image should be placed.
@@ -1516,18 +1608,19 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/images/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_image_item_using_file_from_device(self, request_body: Annotated[Any, ''] = None) -> Any:
+    def create_image_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], request_body: Annotated[Any, ''] = None) -> Any:
         """
         Creates an image item in a board by uploading a file from the device.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             request_body: Optional body of the request, annotated with any data type. Defaults to None.
         
         Returns:
@@ -1540,18 +1633,20 @@ class MiroApp(APIApplication):
             image, upload, management, important
         """
         request_body = request_body
-        path = ""
+        path = f"/v2/boards/{board_id}/images"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_image_item_using_file_from_device(self, request_body: Annotated[Any, ''] = None) -> Any:
+    def update_image_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to update the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to update.'], request_body: Annotated[Any, ''] = None) -> Any:
         """
         Updates an image item on a Miro board using a file from the user's device
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to update the item.
+            item_id: Unique identifier (ID) of the item that you want to update.
             request_body: Payload containing image data and configuration (type and structure determined by Miro API specifications)
         
         Returns:
@@ -1564,18 +1659,19 @@ class MiroApp(APIApplication):
             update, images, management, api-client, important
         """
         request_body = request_body
-        path = ""
+        path = f"/v2/boards/{board_id}/images/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_on_board(self, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None) -> Any:
+    def get_items_on_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board for which you want to retrieve the list of available items.'], limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves items from a specific board using cursor-based pagination.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: Optional cursor value for retrieving the next portion of results.
             limit: Optional limit for the number of items to retrieve.
             type: Optional type of items to filter by.
@@ -1589,7 +1685,7 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, pagination, board, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -1601,12 +1697,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_specific_item_on_board(self, ) -> Any:
+    def get_specific_item_on_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific item on a board.
         
         Args:
-            None: This function takes no parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             A JSON object containing information about the specific item.
@@ -1617,16 +1714,20 @@ class MiroApp(APIApplication):
         Tags:
             item, board, read, important, management
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_item(self, ) -> Any:
+    def delete_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes an item from a board, requiring specific permissions and adhering to rate limiting policies.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            item_id: Unique identifier (ID) of the item that you want to delete.
         
         Returns:
             dict: Parsed JSON response containing deletion confirmation details
@@ -1637,18 +1738,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, items, async_job, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_item_position_or_parent(self, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_item_position_or_parent(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates the position or the parent of an item on a board.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             parent: Optional parent dictionary to update the item's parent.
             position: Optional position dictionary to update the item's position.
         
@@ -1666,18 +1769,19 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/items/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_within_frame(self, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None, parent_item_id: Annotated[Any, '(Required) ID of the frame for which you want to retrieve the list of available items.'] = None, type: Annotated[Any, ''] = None) -> Any:
+    def get_items_within_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that contains the frame for which you want to retrieve the list of available items.'], parent_item_id: Annotated[Any, '(Required) ID of the frame for which you want to retrieve the list of available items.'] = None, limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves a list of items within a specific frame using a cursor-based approach.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: Cursor to retrieve the next portion of the results, if applicable.
             limit: Maximum number of items to return in the response.
             parent_item_id: Required ID of the frame from which to retrieve items.
@@ -1692,7 +1796,7 @@ class MiroApp(APIApplication):
         Tags:
             fetch, pagination, items, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items" # Corrected path variable name from schema parameter
         url = f"{self.base_url}{path}"
         query_params = {
                 "parent_item_id": parent_item_id,
@@ -1705,12 +1809,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_specific_item_on_board1(self, ) -> Any:
+    def get_specific_item_on_board1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a specific item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to retrieve.']) -> Any:
         """
         Retrieves information for a specific item on a board from the Miro API, requiring read access to board data.
         
         Args:
-            None: This method does not take parameters directly. Operates through class instance attributes (implied).
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             Any: Parsed JSON response containing the board item's details.
@@ -1721,19 +1826,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, board-item, miro-api, async_job, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/items/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_item1(self, ) -> Any:
+    def delete_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a specific item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to retrieve.']) -> Any:
         """
         Deletes an item from the board.
         
         Args:
-            None: No arguments are required.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             A JSON response from the server after deleting the item.
@@ -1744,18 +1850,19 @@ class MiroApp(APIApplication):
         Tags:
             delete, item_management, board, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/items/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_board_members(self, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
+    def get_all_board_members(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board to which the board member belongs.'], limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves a pageable list of all members for a board with optional pagination using limit and offset parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             limit: Optional limit on the number of members returned.
             offset: Optional offset for pagination, determining where the list begins.
         
@@ -1768,7 +1875,7 @@ class MiroApp(APIApplication):
         Tags:
             list, pagination, board, members, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -1779,11 +1886,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def share_board(self, emails: Annotated[list[Any], ''] = None, message: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
+    def share_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board to which the board member belongs.'], emails: Annotated[list[Any], ''] = None, message: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
         """
         Shares a board and invites new members by sending an invitation email based on provided parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             emails: A list of email addresses for the users to whom the board will be shared.
             message: An optional message to include in the invitation email.
             role: The role assigned to the invited users.
@@ -1803,19 +1911,20 @@ class MiroApp(APIApplication):
             "role": role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_board_member(self, ) -> Any:
+    def get_specific_board_member(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], board_member_id: Annotated[str, '(Required) Unique identifier (ID) of the board member whose role you want to delete.']) -> Any:
         """
         Retrieves information for a specific board member.
         
         Args:
-            None: This function does not accept additional parameters beyond the class instance
+            board_id: Unique identifier (ID) of the board.
+            board_member_id: Unique identifier (ID) of the board member.
         
         Returns:
             A JSON response containing details about the board member.
@@ -1826,19 +1935,20 @@ class MiroApp(APIApplication):
         Tags:
             read, board-members, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/members/{board_member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def remove_board_member(self, ) -> Any:
+    def remove_board_member(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], board_member_id: Annotated[str, '(Required) Unique identifier (ID) of the board member whose role you want to delete.']) -> Any:
         """
         Removes a board member from a board.
         
         Args:
-            None: This function does not take any parameters.
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            board_member_id: Unique identifier (ID) of the board member whose role you want to delete.
         
         Returns:
             The JSON response from the API after removing the board member.
@@ -1849,18 +1959,20 @@ class MiroApp(APIApplication):
         Tags:
             remove, board-members, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/members/{board_member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_board_member(self, role: Annotated[Any, ''] = None) -> Any:
+    def update_board_member(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], board_member_id: Annotated[str, '(Required) Unique identifier (ID) of the board member whose role you want to delete.'],role: Annotated[str, '(Required) New role to assign to the board member. Required scope: boards:write.']) -> Any:
         """
         Updates the role of a specific board member by submitting a PATCH request with the new role.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            board_member_id: Unique identifier (ID) of the board member.
             role: New role to assign to the board member. Required scope: boards:write.
         
         Returns:
@@ -1876,18 +1988,19 @@ class MiroApp(APIApplication):
             "role": role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/members/{board_member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_shape_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a shape item on a board with specified properties and optional components.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Additional data associated with the shape (e.g., custom metadata).
             geometry: Geometric properties of the shape (e.g., dimensions, type).
             parent: Parent element or container for the shape (e.g., group, frame).
@@ -1911,19 +2024,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/shapes"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_shape_item(self, ) -> Any:
+    def get_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieve information for a specific shape item on a board.
         
         Args:
-            None: This function takes no parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             A JSON object containing the shape item's information.
@@ -1934,19 +2048,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, board, item, shape, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/shapes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_shape_item(self, ) -> Any:
+    def delete_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes a shape item from the board. Requires Miro API authorization with 'boards:write' scope and adheres to Level 3 rate limiting.
         
         Args:
-            None: This instance method does not require additional parameters beyond the class instance itself.
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            item_id: Unique identifier (ID) of the item that you want to delete.
         
         Returns:
             Dict[str, Any]: Parsed JSON response containing API operation results.
@@ -1958,18 +2073,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, shapes, board, management, api, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/shapes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_shape_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a shape item on a board based on the provided data, geometry, parent, position, and style.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Dictionary containing the data for the shape item.
             geometry: Dictionary defining the geometry of the shape item.
             parent: Dictionary specifying the parent of the shape item.
@@ -1993,18 +2110,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/shapes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_sticky_note_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a sticky note item on a Miro board with specified properties.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing sticky note content/metadata. See Miro API documentation for required fields.
             geometry: Dictionary defining dimensions (e.g., width/height) of the sticky note.
             parent: Dictionary identifying parent element when nesting sticky notes.
@@ -2028,19 +2146,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/sticky_notes"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_sticky_note_item(self, ) -> Any:
+    def get_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific sticky note item on a Miro board.
         
         Args:
-            None: This function does not require parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             Any: Parsed JSON response containing the sticky note item data.
@@ -2051,19 +2170,20 @@ class MiroApp(APIApplication):
         Tags:
             sticky-note, retrieve, api-call, boards-read, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/sticky_notes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_sticky_note_item(self, ) -> Any:
+    def delete_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes a sticky note item from the board.
         
         Args:
-            None: This function takes no arguments
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             The JSON response from the server after deletion.
@@ -2074,19 +2194,21 @@ class MiroApp(APIApplication):
         Tags:
             delete, sticky_notes, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/sticky_notes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_sticky_note_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
-        Updates a sticky note item on a board based on provided data and style properties.
+        Updates a sticky note item on a board based on the provided data and style properties.
         
         Args:
-            data: Dictionary containing data to update for the sticky note item.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
+            data: Dictionary containing data properties for the sticky note item.
             geometry: Dictionary specifying the geometry of the sticky note item.
             parent: Dictionary identifying the parent of the sticky note item.
             position: Dictionary containing position information for the sticky note item.
@@ -2109,18 +2231,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/sticky_notes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_text_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a text item on a board by sending a POST request with the specified parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing data for the text item.
             geometry: Dictionary specifying the geometry of the text item.
             parent: Dictionary identifying the parent of the text item.
@@ -2144,19 +2267,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/texts"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_text_item(self, ) -> Any:
+    def get_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific text item on a Miro board, requiring boards:read scope and subject to rate limiting.
         
         Args:
-            None: This method does not accept any parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             dict: A dictionary containing the text item data from the Miro API response.
@@ -2167,16 +2291,20 @@ class MiroApp(APIApplication):
         Tags:
             text, retrieve, miro-api, boards-read, rate-limited, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/texts/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_text_item(self, ) -> Any:
+    def delete_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes a text item from a board, requiring specific permissions and adhering to rate limiting rules.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board from which you want to delete the item.
+            item_id: Unique identifier (ID) of the item that you want to delete.
         
         Returns:
             Response data from the API call parsed as JSON.
@@ -2187,18 +2315,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, text-management, board-api, async_job, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/texts/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_text_item(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a text item on a board based on the provided data and style properties.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Dictionary containing data properties for the text item.
             geometry: Dictionary containing geometry properties for the text item.
             parent: Dictionary specifying the parent of the text item.
@@ -2222,18 +2352,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/texts/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_items_in_bulk(self, items: Annotated[list[Any], ''] = None) -> Any:
+    def create_items_in_bulk(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], items: Annotated[list[Any], ''] = None) -> Any:
         """
         Creates items in bulk by adding up to 20 items of the same or different types to a board in a single transactional operation
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             items: A list of items of any type, which can include shapes, cards, or sticky notes. Defaults to None if no items are provided
         
         Returns:
@@ -2246,18 +2377,19 @@ class MiroApp(APIApplication):
             bulk, transactional, create, important, management
         """
         request_body = items
-        path = ""
+        path = f"/v2/boards/{board_id}/items/bulk"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_items_in_bulk_using_file_from_device(self, request_body: Annotated[Any, ''] = None) -> Any:
+    def create_items_in_bulk_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], request_body: Annotated[Any, ''] = None) -> Any:
         """
         Create items in bulk using a file from a device. This function adds different types of items to a board, supporting up to 20 items per call. The operation is transactional; if any item fails to create, none will be created.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             request_body: The JSON body containing the bulk data for the items to be created. Optional.
         
         Returns:
@@ -2270,18 +2402,19 @@ class MiroApp(APIApplication):
             create, bulk, api, file, important
         """
         request_body = request_body
-        path = ""
+        path = f"/v2/boards/{board_id}/items/bulk" # Corrected path variable name from schema parameter
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_frame(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create a frame.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a new frame on a board by sending the provided data, geometry, position, and style.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create a frame.
             data: Optional dictionary containing data for the frame.
             geometry: Optional dictionary specifying the geometry of the frame.
             position: Optional dictionary defining the position of the frame.
@@ -2303,19 +2436,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/frames"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_frame(self, ) -> Any:
+    def get_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the frame.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the frame that you want to delete.']) -> Any:
         """
         Retrieves information for a specific frame on a Miro board.
         
         Args:
-            None: This method does not accept parameters (acts on the instance's configured board context).
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             Any: Parsed JSON response containing frame data and metadata.
@@ -2326,19 +2460,20 @@ class MiroApp(APIApplication):
         Tags:
             frames, retrieve, api, boards:read, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/frames/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_frame(self, ) -> Any:
+    def delete_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the frame.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the frame that you want to delete.']) -> Any:
         """
         Delete a frame from a Miro board. Requires boards:write scope and adheres to Rate Limit Level 3.
         
         Args:
-            None: This method does not accept parameters beyond the instance reference.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the frame.
         
         Returns:
             dict: Response payload from the Miro API after successful deletion.
@@ -2349,18 +2484,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, frame, management, async_job, boards, miro, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/frames/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_frame(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the frame.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the frame that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a frame on a board using the provided data, style, geometry, or position properties.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the frame.
             data: A dictionary containing data properties to update the frame.
             geometry: A dictionary containing geometry properties to update the frame.
             position: A dictionary containing position properties to update the frame.
@@ -2382,18 +2519,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/frames/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_app_metrics(self, endDate: Annotated[Any, '(Required) End date of the period in UTC format. For example, 2024-12-31.'] = None, period: Annotated[Any, 'Group data by this time period.'] = None, startDate: Annotated[Any, '(Required) Start date of the period in UTC format. For example, 2024-12-31.'] = None) -> Any:
+    def get_app_metrics(self, app_id: Annotated[str, '(Required) ID of the app to get metrics for.'], startDate: Annotated[Any, '(Required) Start date of the period in UTC format. For example, 2024-12-31.'] = None, endDate: Annotated[Any, '(Required) End date of the period in UTC format. For example, 2024-12-31.'] = None, period: Annotated[Any, 'Group data by this time period.'] = None) -> Any:
         """
         Fetches app metrics for a specified time range and groups data by given period.
         
         Args:
+            app_id: ID of the app to get metrics for.
             endDate: (Required) End date of the period in UTC format (e.g., 2024-12-31).
             period: Time period to group data by (e.g., day, week).
             startDate: (Required) Start date of the period in UTC format (e.g., 2024-12-31).
@@ -2407,7 +2545,7 @@ class MiroApp(APIApplication):
         Tags:
             app-metrics, data-fetch, usage-analytics, important, management
         """
-        path = ""
+        path = f"/v2-experimental/apps/{app_id}/metrics"
         url = f"{self.base_url}{path}"
         query_params = {
                 "startDate": startDate,
@@ -2419,12 +2557,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_total_app_metrics(self, ) -> Any:
+    def get_total_app_metrics(self, app_id: Annotated[str, '(Required) ID of the app to get total metrics for.']) -> Any:
         """
         Get total usage metrics for a specific app since its creation.
         
         Args:
-            None: This function takes no parameters.
+            app_id: ID of the app to get total metrics for.
         
         Returns:
             A JSON object containing total app usage metrics.
@@ -2435,7 +2573,7 @@ class MiroApp(APIApplication):
         Tags:
             metrics, reporting, app-management, important
         """
-        path = ""
+        path = f"/v2-experimental/apps/{app_id}/metrics-total"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
@@ -2466,18 +2604,19 @@ class MiroApp(APIApplication):
             "status": status,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = "/v2-experimental/webhooks/board_subscriptions"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_webhook_subscription(self, callbackUrl: Annotated[Any, ''] = None, status: Annotated[Any, ''] = None) -> Any:
+    def update_webhook_subscription(self, subscription_id: Annotated[str, '(Required) '], callbackUrl: Annotated[Any, ''] = None, status: Annotated[Any, ''] = None) -> Any:
         """
         Updates the status or callback URL of an existing webhook subscription.
         
         Args:
+            subscription_id: ID of the subscription to update.
             callbackUrl: New URL for receiving webhook events. None preserves existing value.
             status: Updated status for the subscription (e.g., 'enabled', 'disabled'). None preserves existing value.
         
@@ -2495,14 +2634,14 @@ class MiroApp(APIApplication):
             "status": status,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2-experimental/webhooks/board_subscriptions/{subscription_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_webhook_subscriptions(self, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None) -> Any:
+    def get_webhook_subscriptions(self, limit: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves information about webhook subscriptions for a user.
         
@@ -2519,7 +2658,7 @@ class MiroApp(APIApplication):
         Tags:
             webhooks, list, important
         """
-        path = ""
+        path = "/v2-experimental/webhooks/subscriptions"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -2530,12 +2669,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_specific_webhook_subscription(self, ) -> Any:
+    def get_specific_webhook_subscription(self, subscription_id: Annotated[str, '(Required) Unique identifier (ID) of the subscription that you want to delete']) -> Any:
         """
         Retrieves information for a specific webhook subscription from the Miro API.
         
         Args:
-            None: This function does not accept parameters directly. The subscription ID should be included in the base URL path.
+            subscription_id: Unique identifier (ID) of the subscription.
         
         Returns:
             dict: Parsed JSON response containing the webhook subscription details.
@@ -2546,19 +2685,19 @@ class MiroApp(APIApplication):
         Tags:
             webhooks, experimental, retrieve, api-call, important
         """
-        path = ""
+        path = f"/v2-experimental/webhooks/subscriptions/{subscription_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_webhook_subscription(self, ) -> Any:
+    def delete_webhook_subscription(self, subscription_id: Annotated[str, '(Required) Unique identifier (ID) of the subscription that you want to delete']) -> Any:
         """
         Deletes the specified webhook subscription. Requires appropriate permissions and adherence to rate limiting.
         
         Args:
-            None: This function does not accept parameters
+            subscription_id: Unique identifier (ID) of the subscription.
         
         Returns:
             dict: Parsed JSON response containing the deletion confirmation or related data
@@ -2569,16 +2708,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, webhook, subscription, api, management, important
         """
-        path = ""
+        path = f"/v2-experimental/webhooks/subscriptions/{subscription_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_mind_map_node(self, ) -> Any:
+    def get_specific_mind_map_node(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the mind map node.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the mind map node that you want to delete.']) -> Any:
         """
         Retrieves information for a specific mind map node on a Miro board, requiring boards:read scope.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the mind map node.
         
         Returns:
             JSON-formatted response containing the mind map node's data.
@@ -2589,38 +2732,43 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, mind-map-node, experimental, boards:read, api-call, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_mind_map_node(self, ) -> Any:
+    def delete_mind_map_node(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the mind map node.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the mind map node that you want to delete.']) -> Any:
         """
-        Error generating docstring: 1 validation error for DocstringOutput
-        args
-          Input should be a valid dictionary [type=dict_type, input_value='None', input_type=str]
-            For further information visit https://errors.pydantic.dev/2.11/v/dict_type
+        Deletes a mind map node item and its child nodes from the board.
         
         Args:
-            None: This function takes no arguments
+            board_id: Unique identifier (ID) of the board from which you want to delete the mind map node.
+            item_id: Unique identifier (ID) of the mind map node that you want to delete.
+        
+        Returns:
+            The JSON response from the server after deletion.
+        
+        Raises:
+            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
         
         Tags:
-            generation-error
+            delete, mind-map-node, experimental, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_mind_map_nodes(self, cursor: Annotated[Any, 'Points to the next portion of the results set'] = None, limit: Annotated[Any, 'Maximum number of results returned'] = None) -> Any:
+    def get_mind_map_nodes(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], limit: Annotated[Any, 'Maximum number of results returned'] = None, cursor: Annotated[Any, 'Points to the next portion of the results set'] = None) -> Any:
         """
         Retrieve mind map nodes using cursor-based pagination for a specific board.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: Points to the next portion of the results set for pagination. Subsequent calls should use the cursor value from the previous response to retrieve the next batch.
             limit: Maximum number of results to return in a single batch.
         
@@ -2633,7 +2781,7 @@ class MiroApp(APIApplication):
         Tags:
             mind-map, pagination, cursor-based, retrieve, async_job, boards:read, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -2644,11 +2792,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_mind_map_node(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_mind_map_node(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Create a mind map node, adding it to a board as either a root node or a child node under another node.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Optional data associated with the node, provided as a dictionary.
             geometry: Optional geometry data for the node, provided as a dictionary.
             parent: Optional parent node, provided as a dictionary, indicating the node this node will be a child of.
@@ -2670,18 +2819,19 @@ class MiroApp(APIApplication):
             "position": position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_on_board1(self, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None) -> Any:
+    def get_items_on_board1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board for which you want to retrieve the list of available items.'], limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieve paginated items from a specific board using cursor-based pagination, with optional filtering by item type.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: Cursor for pagination. Set to the cursor value from the previous response to retrieve the next page of results.
             limit: Maximum number of items to return per request.
             type: Filter items by specific type (if provided).
@@ -2695,7 +2845,7 @@ class MiroApp(APIApplication):
         Tags:
             list, paginated, cursor, filter, board-items, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/items"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -2707,11 +2857,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_shape_item1(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a flowchart shape item on a Miro board using the provided parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board where you want to create the item.
             data: Dictionary containing shape item data. See Miro API documentation for structure.
             geometry: Dictionary specifying geometric properties of the shape (e.g., dimensions).
             parent: Dictionary referencing a parent element for hierarchical structures.
@@ -2735,19 +2886,20 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/shapes"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_shape_item1(self, ) -> Any:
+    def get_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Retrieves information for a specific shape item on a board.
         
         Args:
-            None: This function does not take any parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             A JSON response containing information about the shape item.
@@ -2758,19 +2910,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, board-item, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/shapes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_shape_item1(self, ) -> Any:
+    def delete_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
         """
         Deletes a flowchart shape item from the board.
         
         Args:
-            None: This function does not take any parameters.
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             The JSON response from the delete operation.
@@ -2781,18 +2934,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, flowchart, shape, item, management, important
         """
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/shapes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_shape_item1(self, data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates a flowchart shape item on a board based on the provided data and style properties.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             data: Dictionary containing data properties for the shape item.
             geometry: Dictionary containing geometric properties for the shape item.
             parent: Dictionary specifying the parent of the shape item.
@@ -2816,18 +2971,19 @@ class MiroApp(APIApplication):
             "style": style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2-experimental/boards/{board_id}/shapes/{item_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_groups_on_aboard(self, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, 'The maximum number of items to return at one time, default is 10, maximum is 50.'] = None) -> Any:
+    def get_all_groups_on_aboard(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], limit: Annotated[Any, 'The maximum number of items to return at one time, default is 10, maximum is 50.'] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves all groups on a board, using a cursor-based pagination approach.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: A cursor to fetch the next portion of results; defaults to None.
             limit: The maximum number of items to return at one time; defaults to 10, with a maximum of 50.
         
@@ -2840,7 +2996,7 @@ class MiroApp(APIApplication):
         Tags:
             fetch, groups, cursor-pagination, important, management
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/groups"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -2851,11 +3007,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_group(self, data: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_group(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], data: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Creates a group of items on a Miro board using the provided data dictionary.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             data: Dictionary containing item data to create a group (None results in empty group creation with default parameters)
         
         Returns:
@@ -2871,18 +3028,19 @@ class MiroApp(APIApplication):
             "data": data,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/groups"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_of_agroup_by_id(self, cursor: Annotated[Any, ''] = None, group_item_id: Annotated[Any, '(Required) The ID of the group item to retrieve.'] = None, limit: Annotated[Any, 'The maximum number of items to return at one time, default is 10, maximum is 50.'] = None) -> Any:
+    def get_items_of_agroup_by_id(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_item_id: Annotated[Any, '(Required) The ID of the group item to retrieve.'] = None, limit: Annotated[Any, 'The maximum number of items to return at one time, default is 10, maximum is 50.'] = None, cursor: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves items of a group by ID using a cursor-based approach.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             cursor: Cursor value for pagination. If None, returns the first set of results.
             group_item_id: The ID of the group item to retrieve. This parameter is required.
             limit: The maximum number of items to return at one time (default is 10, maximum is 50).
@@ -2896,7 +3054,7 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, group, cursor-based, async_job, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/groups/items"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -2908,28 +3066,37 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def get_agroup_by_its_id(self, ) -> Any:
+    def get_agroup_by_its_id(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.']) -> Any:
         """
-        Failed to extract docstring information
+        Returns a list of items in a specific group.
         
         Args:
-            None: This function takes no arguments
+            board_id: Unique identifier (ID) of the board.
+            group_id: Unique identifier (ID) of the group.
         
         Returns:
-            Unknown return value
+            The JSON response containing the list of items in the group.
+        
+        Raises:
+            requests.HTTPError: Raised if the HTTP request fails.
+        
+        Tags:
+            get, group, items, board, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/groups/{group_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def updates_agroup_with_new_items(self, data: Annotated[dict[str, Any], ''] = None) -> Any:
+    def updates_agroup_with_new_items(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.'], data: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates an existing group entirely by replacing it with new data and assigns a new group ID.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            group_id: Unique identifier (ID) of the group.
             data: A dictionary containing the new data to replace the group. It is optional and defaults to None.
         
         Returns:
@@ -2945,18 +3112,20 @@ class MiroApp(APIApplication):
             "data": data,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/groups/{group_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._put(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def ungroup_items(self, delete_items: Annotated[Any, 'Indicates whether the items should be removed. By default, false.'] = None) -> Any:
+    def ungroup_items(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.'], delete_items: Annotated[Any, 'Indicates whether the items should be removed. By default, false.'] = None) -> Any:
         """
         Ungroups items from a group, optionally deleting them.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            group_id: Unique identifier (ID) of the group.
             delete_items: Indicates whether the items should be removed; defaults to None, meaning no deletion by default.
         
         Returns:
@@ -2968,7 +3137,7 @@ class MiroApp(APIApplication):
         Tags:
             ungroup, delete, groups, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/groups/{group_id}"
         url = f"{self.base_url}{path}"
         query_params = {
                 "delete_items": delete_items,
@@ -2978,11 +3147,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def deletes_the_group(self, delete_items: Annotated[Any, '(Required) Indicates whether the items should be removed. Set to `true` to delete items in the group.'] = None) -> Any:
+    def deletes_the_group(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.'], delete_items: Annotated[Any, '(Required) Indicates whether the items should be removed. Set to `true` to delete items in the group.'] = None) -> Any:
         """
         Deletes a group from the board, optionally removing items within it.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            group_id: Unique identifier (ID) of the group.
             delete_items: Indicates whether the items should be removed. Set to `true` to delete items in the group.
         
         Returns:
@@ -2994,7 +3165,7 @@ class MiroApp(APIApplication):
         Tags:
             delete, group-management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/groups/{group_id}" # Corrected path segment from <string> to {group_id}
         url = f"{self.base_url}{path}"
         query_params = {
                 "delete_items": delete_items,
@@ -3028,16 +3199,20 @@ class MiroApp(APIApplication):
             "clientSecret": clientSecret,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = "/v2/oauth/revoke"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_tags_from_item(self, ) -> Any:
+    def get_tags_from_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board with the item whose tags you want to retrieve.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item whose tags you want to retrieve.']) -> Any:
         """
         Retrieves all tags associated with the specified item by making a GET request to the Miro API endpoint.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
         
         Returns:
             A parsed JSON response containing tags associated with the item, typically as a list or dictionary structure.
@@ -3048,18 +3223,19 @@ class MiroApp(APIApplication):
         Tags:
             get, retrieve, tags, api, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items/{item_id}/tags"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_tags_from_board(self, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
+    def get_tags_from_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board whose tags you want to retrieve.'], limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves tags from a specified board using pagination parameters.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             limit: Maximum number of tags to return (used for pagination).
             offset: Number of tags to skip before returning results (used for pagination).
         
@@ -3072,7 +3248,7 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, list, board, tags, pagination, rest-api, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/tags"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -3083,11 +3259,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_tag(self, fillColor: Annotated[Any, ''] = None, title: Annotated[Any, ''] = None) -> Any:
+    def create_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board whose tags you want to retrieve.'], fillColor: Annotated[Any, ''] = None, title: Annotated[Any, ''] = None) -> Any:
         """
         Creates a tag on a board with specified visual attributes, requiring API write access.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             fillColor: (Any, optional): Hex code or color name for the tag's background fill.
             title: (Any, optional): Display text for the tag.
         
@@ -3105,16 +3282,20 @@ class MiroApp(APIApplication):
             "title": title,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/tags"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_tag(self, ) -> Any:
+    def get_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to delete a specific tag.'], tag_id: Annotated[str, '(Required) Unique identifier (ID) of the tag that you want to delete.']) -> Any:
         """
         Retrieves information for a specific tag from the Miro API, requiring the 'boards:write' scope.
+        
+        Args:
+            board_id: Unique identifier (ID) of the board.
+            tag_id: Unique identifier (ID) of the tag.
         
         Returns:
             Any: Parsed JSON response containing tag information from the Miro API
@@ -3125,19 +3306,20 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, tag, boards-write, api-client, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/tags/{tag_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_tag(self, ) -> Any:
+    def delete_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to delete a specific tag.'], tag_id: Annotated[str, '(Required) Unique identifier (ID) of the tag that you want to delete.']) -> Any:
         """
         Deletes a specified tag from the board, removing it from all cards and sticky notes.
         
         Args:
-            None: This function takes no additional parameters.
+            board_id: Unique identifier (ID) of the board.
+            tag_id: Unique identifier (ID) of the tag.
         
         Returns:
             The response from the delete operation as JSON.
@@ -3148,18 +3330,20 @@ class MiroApp(APIApplication):
         Tags:
             delete, tag, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/tags/{tag_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_tag(self, fillColor: Annotated[Any, ''] = None, title: Annotated[Any, ''] = None) -> Any:
+    def update_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to delete a specific tag.'], tag_id: Annotated[str, '(Required) Unique identifier (ID) of the tag that you want to delete.'], fillColor: Annotated[Any, ''] = None, title: Annotated[Any, ''] = None) -> Any:
         """
         Updates a tag's properties (fill color and title) on a Miro board. Changes made via API are not reflected in real-time until the board is refreshed.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            tag_id: Unique identifier (ID) of the tag.
             fillColor: New fill color for the tag (optional)
             title: New title/text for the tag (optional)
         
@@ -3177,18 +3361,19 @@ class MiroApp(APIApplication):
             "title": title,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/boards/{board_id}/tags/{tag_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_by_tag(self, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None, tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag that you want to retrieve.'] = None) -> Any:
+    def get_items_by_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to retrieve a specific tag.'], tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag that you want to retrieve.'] = None, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
         """
         Retrieves items associated with a specified tag from a Miro board.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
             limit: Maximum number of items to retrieve (None returns all available items).
             offset: Starting position for paginated results.
             tag_id: Unique identifier (ID) of the tag to filter items (required).
@@ -3202,7 +3387,7 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, tag, items, pagination, api, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items" # Corrected path variable name from schema parameter
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -3214,11 +3399,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def attach_tag_to_item(self, tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag you want to add to the item.'] = None) -> Any:
+    def attach_tag_to_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board with the item that you want to remove a tag from.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to remove the tag from.'], tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag you want to add to the item.'] = None) -> Any:
         """
         Attaches an existing tag to a specified Miro board item (card or sticky note). Supports up to 8 tags per item.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             tag_id: (Required) Unique identifier (ID) of the tag to attach to the item. Must be valid Miro tag ID.
         
         Returns:
@@ -3230,7 +3417,7 @@ class MiroApp(APIApplication):
         Tags:
             tag-attachment, board-management, async_job, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items/{item_id}/tags" # Corrected path variable name from schema parameter
         url = f"{self.base_url}{path}"
         query_params = {
                 "tag_id": tag_id,
@@ -3240,11 +3427,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def remove_tag_from_item(self, tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag that you want to remove from the item.'] = None) -> Any:
+    def remove_tag_from_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board with the item that you want to remove a tag from.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to remove the tag from.'], tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag that you want to remove from the item.'] = None) -> Any:
         """
         Removes a specific tag from an item without deleting the tag itself.
         
         Args:
+            board_id: Unique identifier (ID) of the board.
+            item_id: Unique identifier (ID) of the item.
             tag_id: Unique identifier (ID) of the tag to be removed from the item.
         
         Returns:
@@ -3256,7 +3445,7 @@ class MiroApp(APIApplication):
         Tags:
             remove, tag, management, important
         """
-        path = ""
+        path = f"/v2/boards/{board_id}/items/{item_id}/tags" # Corrected path variable name from schema parameter
         url = f"{self.base_url}{path}"
         query_params = {
                 "tag_id": tag_id,
@@ -3266,11 +3455,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def list_of_projects(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, limit: Annotated[Any, 'The maximum number of results to return per call. If the number of projects in the response is greater than the limit specified, the response returns the cursor parameter with a value.'] = None) -> Any:
+    def list_of_projects(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to retrieve the list of available projects.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to retrieve the list of available projects.'], limit: Annotated[Any, 'The maximum number of results to return per call. If the number of projects in the response is greater than the limit specified, the response returns the cursor parameter with a value.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None) -> Any:
         """
         Retrieves a list of projects in an organization, including private projects with Content Admin permissions.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
             cursor: An indicator of the position of a page in the full set of results. To obtain the first page, leave it empty. To obtain subsequent pages, set it to the value returned in the cursor field of the previous request.
             limit: The maximum number of results to return per call.
         
@@ -3283,7 +3474,7 @@ class MiroApp(APIApplication):
         Tags:
             list, projects, management, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -3294,11 +3485,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_project(self, name: Annotated[Any, ''] = None) -> Any:
+    def create_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to retrieve the list of available projects.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to retrieve the list of available projects.'], name: Annotated[Any, ''] = None) -> Any:
         """
         Creates a new project in an existing team as an organizational container for boards, enabling shared access management.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
             name: Name of the project (required). Projects act as folders for organizing boards with controlled access.
         
         Returns:
@@ -3314,19 +3507,21 @@ class MiroApp(APIApplication):
             "name": name,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_project(self, ) -> Any:
+    def get_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to delete a project.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to delete a project.'], project_id: Annotated[str, '(Required) The ID of the project that you want to delete.']) -> Any:
         """
         Retrieves project information, such as the name of an existing project.
         
         Args:
-            None: This function takes no parameters.
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
         
         Returns:
             The project information in JSON format.
@@ -3337,19 +3532,21 @@ class MiroApp(APIApplication):
         Tags:
             management, project, enterprise, important, read
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_project(self, ) -> Any:
+    def delete_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to delete a project.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to delete a project.'], project_id: Annotated[str, '(Required) The ID of the project that you want to delete.']) -> Any:
         """
         Deletes a project, retaining associated boards and users within the team.
         
         Args:
-            None: This function takes no arguments.
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
         
         Returns:
             The JSON response from the server after deleting the project.
@@ -3360,18 +3557,21 @@ class MiroApp(APIApplication):
         Tags:
             delete, project, management, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_project(self, name: Annotated[Any, ''] = None) -> Any:
+    def update_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to delete a project.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to delete a project.'], project_id: Annotated[str, '(Required) The ID of the project that you want to delete.'], name: Annotated[Any, ''] = None) -> Any:
         """
         Updates project information, including the project name.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
             name: Project name to update (optional). Required scope: projects:write. Enterprise plan and Company Admin role required.
         
         Returns:
@@ -3388,16 +3588,21 @@ class MiroApp(APIApplication):
             "name": name,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_project_settings(self, ) -> Any:
+    def get_project_settings(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project whose settings you want to update.']) -> Any:
         """
         Retrieves project settings from the Miro API. This endpoint requires specific permissions and is restricted to Enterprise plan users with Company Admin role.
+        
+        Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
         
         Returns:
             dict: A dictionary containing the project settings fetched from the Miro API
@@ -3408,18 +3613,21 @@ class MiroApp(APIApplication):
         Tags:
             project-settings, management, enterprise, api-call, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_project_settings(self, sharingPolicySettings: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_project_settings(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project whose settings you want to update.'], sharingPolicySettings: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates the settings of a project, specifically modifying the sharing policy settings.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
             sharingPolicySettings: Optional dictionary containing settings for sharing policies; defaults to None if not provided.
         
         Returns:
@@ -3435,18 +3643,21 @@ class MiroApp(APIApplication):
             "sharingPolicySettings": sharingPolicySettings,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def list_of_project_members(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, limit: Annotated[Any, 'The maximum number of results to return per call. If the number of project members in the response is greater than the limit specified, the response returns the cursor parameter with a value.'] = None) -> Any:
+    def list_of_project_members(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project for which you want to retrieve the list of members.'], limit: Annotated[Any, 'The maximum number of results to return per call. If the number of project members in the response is greater than the limit specified, the response returns the cursor parameter with a value.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None) -> Any:
         """
         Retrieves a paginated list of members for a specific project, supporting cursor-based pagination.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
             cursor: An indicator of the position of a page in the full set of results. Leave empty to fetch the first page, or use the value from the previous response's 'cursor' field for subsequent pages.
             limit: The maximum number of results per request. If the response contains more members than this limit, the 'cursor' parameter is included in the response.
         
@@ -3459,7 +3670,7 @@ class MiroApp(APIApplication):
         Tags:
             list, project-members, pagination, async-job, important, management
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -3470,11 +3681,14 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def add_member_in_aproject(self, email: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
+    def add_member_in_aproject(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project for which you want to retrieve the list of members.'], email: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
         """
         Adds a member to a project by sending a request with the member's email and role.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
             email: Email of the user to be added to the project
             role: Role of the user in the project
         
@@ -3492,16 +3706,22 @@ class MiroApp(APIApplication):
             "role": role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_project_member(self, ) -> Any:
+    def get_project_member(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project from which you want to remove a member.'], member_id: Annotated[str, '(Required) The ID of the member that you want to remove from a project.']) -> Any:
         """
         Retrieves information for a specific project member from Miro. Requires Company Admin role and Enterprise plan access.
+        
+        Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
+            member_id: The ID of the member.
         
         Returns:
             dict: A JSON response containing the project member's details.
@@ -3512,19 +3732,22 @@ class MiroApp(APIApplication):
         Tags:
             get, project-members, enterprise, important, async_job
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def remove_project_member(self, ) -> Any:
+    def remove_project_member(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project from which you want to remove a member.'], member_id: Annotated[str, '(Required) The ID of the member that you want to remove from a project.']) -> Any:
         """
         Remove a project member from a project without removing them from the team.
         
         Args:
-            None: This function does not take any parameters.
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
+            member_id: The ID of the member.
         
         Returns:
             The response from the server after removing the project member.
@@ -3535,18 +3758,22 @@ class MiroApp(APIApplication):
         Tags:
             remove, project, management, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_project_member(self, role: Annotated[Any, ''] = None) -> Any:
+    def update_project_member(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project from which you want to remove a member.'], member_id: Annotated[str, '(Required) The ID of the member that you want to remove from a project.'], role: Annotated[Any, ''] = None) -> Any:
         """
         Updates the role of a project member.
         
         Args:
+            org_id: The ID of the organization.
+            team_id: The ID of the team.
+            project_id: The ID of the project.
+            member_id: The ID of the member.
             role: New role to assign to the project member.
         
         Returns:
@@ -3562,18 +3789,19 @@ class MiroApp(APIApplication):
             "role": role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def list_teams(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, limit: Annotated[Any, ''] = None, name: Annotated[Any, 'Name query. Filters teams by name using case insensitive partial match. A value "dev" will return both "Developer\'s team" and "Team for developers".'] = None) -> Any:
+    def list_teams(self, org_id: Annotated[str, '(Required) The id of the Organization.'], limit: Annotated[Any, ''] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, name: Annotated[Any, 'Name query. Filters teams by name using case insensitive partial match. A value "dev" will return both "Developer\'s team" and "Team for developers".'] = None) -> Any:
         """
         Retrieves a paginated list of teams in an organization, filtered by name if provided.
         
         Args:
+            org_id: The id of the Organization.
             cursor: An indicator of pagination position. Leave empty for the first page, or use the value from the previous response's cursor field for subsequent pages.
             limit: Maximum number of teams to retrieve (exact behavior depends on API implementation details).
             name: Case-insensitive partial match filter for team names (e.g., 'dev' matches 'Developer\'s team' and 'Developers').
@@ -3587,7 +3815,7 @@ class MiroApp(APIApplication):
         Tags:
             list-teams, pagination, filter, enterprise, management, teams, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -3599,11 +3827,12 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def create_team(self, name: Annotated[Any, ''] = None) -> Any:
+    def create_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], name: Annotated[Any, ''] = None) -> Any:
         """
         Creates a new team in an existing organization with the specified name.
         
         Args:
+            org_id: The id of the Organization.
             name: (Annotated[Any, '']) The name of the team to create. Must be a non-empty string if required by API constraints, although the type annotation currently allows any value.
         
         Returns:
@@ -3619,16 +3848,20 @@ class MiroApp(APIApplication):
             "name": name,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team(self, ) -> Any:
+    def get_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
         """
         Retrieves team information for an existing team, available for Enterprise plan users.
+        
+        Args:
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
         
         Returns:
             JSON response containing team information.
@@ -3639,19 +3872,20 @@ class MiroApp(APIApplication):
         Tags:
             teams, enterprise, management, read, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_team(self, ) -> Any:
+    def delete_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
         """
         Delete an existing team from the Miro organization, requiring Company Admin privileges and Enterprise plan access.
         
         Args:
-            None: This function does not require direct parameters as it acts on the current instance's context and API configuration.
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
         
         Returns:
             JSON response from the Miro API containing deletion confirmation details.
@@ -3662,45 +3896,57 @@ class MiroApp(APIApplication):
         Tags:
             delete, teams, management, enterprise, async_job, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team(self, name: Annotated[Any, ''] = None) -> Any:
+    def update_team(self,
+                    org_id: Annotated[str, '(Required) The id of the Organization.'],
+                    team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
         """
         Updates an existing team by changing its name.
-        
+
+        Note: This API is available only for Enterprise plan users and requires
+        the user to have the role of a Company Admin.
+
         Args:
-            name: The new name of the team; if None, no change is made.
-        
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
+            name: The new name of the team. If None, the 'name' property is not
+                included in the request body.
+
         Returns:
-            The JSON response from the server after updating the team.
-        
+            The JSON response from the server after updating the team (typically
+            representing the updated team object).
+
         Raises:
-            HTTPError: Raised if there is an HTTP request error, such as a bad status code.
-        
+            requests.HTTPError: Raised if there is an HTTP request error, such as
+                                a bad status code (4xx or 5xx).
+
         Tags:
             update, team, management, enterprise, important
         """
-        request_body = {
-            "name": name,
-        }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        # Construct the request body based on provided optional parameters
+        request_body = {}
+
+        path = f"/v2/orgs/{org_id}/teams/{team_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
-        response.raise_for_status()
+
+        response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         return response.json()
 
-    def list_team_members(self, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, limit: Annotated[Any, ''] = None, role: Annotated[Any, '\nRole query. Filters members by role using full word match. Accepted values are:\n* "member":     Team member with full member permissions.\n* "admin":      Admin of a team. Team member with permission to manage team.\n* "non_team":   External user, non-team user.\n* "team_guest": Team-guest user, user with access only to a team without access to organization.\n'] = None) -> Any:
+    def list_team_members(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], limit: Annotated[Any, ''] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, role: Annotated[Any, '\nRole query. Filters members by role using full word match. Accepted values are:\n* "member":     Team member with full member permissions.\n* "admin":      Admin of a team. Team member with permission to manage team.\n* "non_team":   External user, non-team user.\n* "team_guest": Team-guest user, user with access only to a team without access to organization.\n'] = None) -> Any:
         """
         Retrieves team members with pagination and optional role filtering, requiring specific permissions and rate limits.
         
         Args:
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
             cursor: An indicator of the page position in results. Leave empty for first page, use previous response's cursor for subsequent pages.
             limit: Maximum number of team members to retrieve per request. If unspecified, uses API's default parameter value.
             role: Role filter (full-word match): 'member' (full permissions), 'admin' (team management), 'non_team' (external users), 'team_guest' (team-only access).
@@ -3714,7 +3960,7 @@ class MiroApp(APIApplication):
         Tags:
             list, team-members, pagination, management, enterprise, api, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {
                 "limit": limit,
@@ -3726,11 +3972,13 @@ class MiroApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def invite_team_members(self, email: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
+    def invite_team_members(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], email: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
         """
         Invites a new Miro user to an existing team via email, requiring the user to exist in the organization (team invites via SCIM/external identity providers require separate implementation).
         
         Args:
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
             email: Email address of the user to invite (must already exist in organization)
             role: Team role to assign to invited member
         
@@ -3748,19 +3996,21 @@ class MiroApp(APIApplication):
             "role": role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/members"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team_member(self, ) -> Any:
+    def get_team_member(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], member_id: Annotated[str, '(Required) The id of the Team Member']) -> Any:
         """
         Retrieves a team member.
         
         Args:
-            None: This function does not take any parameters.
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
+            member_id: The id of the Team Member.
         
         Returns:
             A JSON response containing the team member details.
@@ -3771,19 +4021,21 @@ class MiroApp(APIApplication):
         Tags:
             retrieve, team-member, enterprise, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_team_member_from_team(self, ) -> Any:
+    def delete_team_member_from_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], member_id: Annotated[str, '(Required) The id of the Team Member']) -> Any:
         """
-        Deletes a team member from a team (Note: Currently no parameters are defined to identify the member/team for deletion).
+        Deletes a team member from a team.
         
         Args:
-            None: This function currently takes no parameters.
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
+            member_id: The id of the Team Member.
         
         Returns:
             The JSON response from the delete operation.
@@ -3794,18 +4046,21 @@ class MiroApp(APIApplication):
         Tags:
             delete, team-member, enterprise-only, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team_member(self, role: Annotated[Any, ''] = None) -> Any:
+    def update_team_member(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], member_id: Annotated[str, '(Required) The id of the Team Member'], role: Annotated[Any, ''] = None) -> Any:
         """
         Updates the role of a team member within an organization, requiring Company Admin permissions and a specific scope.
         
         Args:
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
+            member_id: The id of the Team Member.
             role: New role to assign to the team member. Must comply with organizational role definitions.
         
         Returns:
@@ -3821,16 +4076,19 @@ class MiroApp(APIApplication):
             "role": role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_default_team_settings(self, ) -> Any:
+    def get_default_team_settings(self, org_id: Annotated[str, '(Required) The id of an Organization.']) -> Any:
         """
         Retrieve default team settings for an existing organization. Requires Company Admin privileges.
+        
+        Args:
+            org_id: The id of an Organization.
         
         Returns:
             dict: Default team settings parsed from the API response JSON.
@@ -3841,19 +4099,20 @@ class MiroApp(APIApplication):
         Tags:
             team-settings, management, enterprise, api, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/default_teams_settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team_settings1(self, ) -> Any:
+    def get_team_settings1(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
         """
         Retrieves team settings for an existing team. Requires enterprise plan and Company Admin role.
         
         Args:
-            None: This function takes no arguments
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
         
         Returns:
             dict: JSON response containing team settings
@@ -3864,18 +4123,20 @@ class MiroApp(APIApplication):
         Tags:
             get, team-settings, read, management, enterprise, important
         """
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team_settings1(self, teamAccountDiscoverySettings: Annotated[dict[str, Any], ''] = None, teamCollaborationSettings: Annotated[dict[str, Any], ''] = None, teamCopyAccessLevelSettings: Annotated[dict[str, Any], ''] = None, teamInvitationSettings: Annotated[dict[str, Any], ''] = None, teamSharingPolicySettings: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_team_settings1(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], teamAccountDiscoverySettings: Annotated[dict[str, Any], ''] = None, teamCollaborationSettings: Annotated[dict[str, Any], ''] = None, teamCopyAccessLevelSettings: Annotated[dict[str, Any], ''] = None, teamInvitationSettings: Annotated[dict[str, Any], ''] = None, teamSharingPolicySettings: Annotated[dict[str, Any], ''] = None) -> Any:
         """
         Updates team settings for an existing team.
         
         Args:
+            org_id: The id of the Organization.
+            team_id: The id of the Team.
             teamAccountDiscoverySettings: A dictionary containing team account discovery settings.
             teamCollaborationSettings: A dictionary containing team collaboration settings.
             teamCopyAccessLevelSettings: A dictionary containing team copy access level settings.
@@ -3899,7 +4160,7 @@ class MiroApp(APIApplication):
             "teamSharingPolicySettings": teamSharingPolicySettings,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = ""
+        path = f"/v2/orgs/{org_id}/teams/{team_id}/settings"
         url = f"{self.base_url}{path}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
@@ -4014,45 +4275,4 @@ class MiroApp(APIApplication):
             self.delete_shape_item1,
             self.update_shape_item1,
             self.get_all_groups_on_aboard,
-            self.create_group,
-            self.get_items_of_agroup_by_id,
-            self.get_agroup_by_its_id,
-            self.updates_agroup_with_new_items,
-            self.ungroup_items,
-            self.deletes_the_group,
-            self.revoke_token_v2,
-            self.get_tags_from_item,
-            self.get_tags_from_board,
-            self.create_tag,
-            self.get_tag,
-            self.delete_tag,
-            self.update_tag,
-            self.get_items_by_tag,
-            self.attach_tag_to_item,
-            self.remove_tag_from_item,
-            self.list_of_projects,
-            self.create_project,
-            self.get_project,
-            self.delete_project,
-            self.update_project,
-            self.get_project_settings,
-            self.update_project_settings,
-            self.list_of_project_members,
-            self.add_member_in_aproject,
-            self.get_project_member,
-            self.remove_project_member,
-            self.update_project_member,
-            self.list_teams,
-            self.create_team,
-            self.get_team,
-            self.delete_team,
-            self.update_team,
-            self.list_team_members,
-            self.invite_team_members,
-            self.get_team_member,
-            self.delete_team_member_from_team,
-            self.update_team_member,
-            self.get_default_team_settings,
-            self.get_team_settings1,
-            self.update_team_settings1
-        ] 
+        ]
