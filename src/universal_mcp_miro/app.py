@@ -1,4176 +1,4965 @@
-from typing import Any, Annotated
+from typing import Any
 from universal_mcp.applications import APIApplication
 from universal_mcp.integrations import Integration
 
 class MiroApp(APIApplication):
     def __init__(self, integration: Integration = None, **kwargs) -> None:
-        super().__init__(name='miro', integration=integration, **kwargs)
+        super().__init__(name='miroapp', integration=integration, **kwargs)
         self.base_url = "https://api.miro.com"
 
+    def revoke_token_v1(self, access_token=None) -> Any:
+        """
+        Revokes an OAuth access token using the POST method at "/v1/oauth/revoke", allowing clients to invalidate tokens as needed.
 
-    def revoke_token_v1(self, access_token: Annotated[Any, '(Required) Access token that you want to revoke'] = None) -> Any:
-        """
-        Revokes the provided access token, making it no longer valid, along with any associated refresh token.
-        
         Args:
-            access_token: (Optional) The access token to be revoked. If not provided, no token is revoked. Type: Any
-        
+            access_token (string): (Required) Access token that you want to revoke Example: '<Add your access token here>'.
+
         Returns:
-            The JSON response from the server after revoking the access token. Returns None if no data is returned.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            revoke, token, management, important
+            Tokens
         """
-        path = "/v1/oauth/revoke"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "access_token": access_token,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, params=query_params)
+        url = f"{self.base_url}/v1/oauth/revoke"
+        query_params = {k: v for k, v in [('access_token', access_token)] if v is not None}
+        response = self._post(url, data={}, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_access_token_information(self, ) -> Any:
+    def get_access_token_information(self) -> Any:
         """
-        Get detailed information about an access token, including token type, scopes, team, user, and creation details.
-        
-        Args:
-            None: No parameters required.
-        
+        Retrieves an OAuth 2.0 token using the GET method for client authorization purposes.
+
         Returns:
-            A JSON response containing access token details.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            access, tokens, information, important
+            Tokens
         """
-        path = "/v1/oauth-token"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v1/oauth-token"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_audit_logs(self, createdAfter: Annotated[Any, '(Required) Retrieve audit logs created after the date and time provided. This is the start date of the duration for which you want to retrieve audit logs. For example, if you want to retrieve audit logs between `2023-03-30T17:26:50.000Z` and `2023-04-30T17:26:50.000Z`, provide `2023-03-30T17:26:50.000Z` as the value for the `createdAfter` parameter.<br>Format: UTC, adheres to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), including milliseconds and a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC))."\n'] = None, createdBefore: Annotated[Any, '(Required) Retrieve audit logs created before the date and time provided. This is the end date of the duration for which you want to retrieve audit logs. For example, if you want to retrieve audit logs between `2023-03-30T17:26:50.000Z` and `2023-04-30T17:26:50.000Z`, provide `2023-04-30T17:26:50.000Z` as the value for the `createdBefore` parameter.<br>Format: UTC, adheres to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), including milliseconds and a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC)).\n'] = None, cursor: Annotated[Any, 'A cursor-paginated method returns a portion of the total set of results based on the `limit` specified and a `cursor` that points to the next portion of the results. To retrieve the next set of results of the collection, set the `cursor` parameter in your next request to the appropriate cursor value returned in the response.'] = None, limit: Annotated[Any, 'Maximum number of results returned based on the `limit` specified in the request. For example, if there are `30` results, the request has no `cursor` value, and the `limit` is set to `20`,the `size` of the results will be `20`. The rest of the results will not be returned. To retrieve the rest of the results, you must make another request and set the appropriate value for the `cursor` parameter value that  you obtained from the response.<br>Default: `100`\n'] = None, sorting: Annotated[Any, 'Sort order in which you want to view the result set. Based on the value you provide, the results are sorted in an ascending or descending order of the audit log creation date (audit log `createdAt` parameter).<br>Default: `ASC`\n'] = None) -> Any:
+    def get_audit_logs(self, createdAfter=None, createdBefore=None, cursor=None, limit=None, sorting=None) -> Any:
         """
-        Retrieves a paginated list of audit logs within a specified time range, supporting cursor-based pagination.
-        
+        Retrieves audit logs with optional filtering by time range, pagination, and sorting parameters.
+
         Args:
-            createdAfter: Earliest timestamp for audit logs (inclusive). Must be ISO 8601 UTC format with milliseconds and trailing 'Z' (e.g., '2023-03-30T17:26:50.000Z').
-            createdBefore: Latest timestamp for audit logs (exclusive). Must be ISO 8601 UTC format with milliseconds and trailing 'Z' (e.g., '2023-04-30T17:26:50.000Z').
-            cursor: Pagination cursor token for subsequent requests.
-            limit: Maximum number of results per page (default: 100).
-            sorting: Sort order for results ('ASC' or 'DESC' by creation date, default: 'ASC').
-        
+            createdAfter (string): (Required) Retrieve audit logs created after the date and time provided. This is the start date of the duration for which you want to retrieve audit logs. For example, if you want to retrieve audit logs between `2023-03-30T17:26:50.000Z` and `2023-04-30T17:26:50.000Z`, provide `2023-03-30T17:26:50.000Z` as the value for the `createdAfter` parameter.<br>Format: UTC, adheres to [ISO 8601]( including milliseconds and a [trailing Z offset]( Example: '2023-03-30T17:26:50.000Z'.
+            createdBefore (string): (Required) Retrieve audit logs created before the date and time provided. This is the end date of the duration for which you want to retrieve audit logs. For example, if you want to retrieve audit logs between `2023-03-30T17:26:50.000Z` and `2023-04-30T17:26:50.000Z`, provide `2023-04-30T17:26:50.000Z` as the value for the `createdBefore` parameter.<br>Format: UTC, adheres to [ISO 8601]( including milliseconds and a [trailing Z offset]( Example: '2023-04-30T17:26:50.000Z'.
+            cursor (string): A cursor-paginated method returns a portion of the total set of results based on the `limit` specified and a `cursor` that points to the next portion of the results. To retrieve the next set of results of the collection, set the `cursor` parameter in your next request to the appropriate cursor value returned in the response.
+            limit (string): Maximum number of results returned based on the `limit` specified in the request. For example, if there are `30` results, the request has no `cursor` value, and the `limit` is set to `20`,the `size` of the results will be `20`. The rest of the results will not be returned. To retrieve the rest of the results, you must make another request and set the appropriate value for the `cursor` parameter value that you obtained from the response.<br>Default: `100` Example: '100'.
+            sorting (string): Sort order in which you want to view the result set. Based on the value you provide, the results are sorted in an ascending or descending order of the audit log creation date (audit log `createdAt` parameter).<br>Default: `ASC` Example: 'ASC'.
+
         Returns:
-            JSON response containing audit logs and pagination metadata.
-        
-        Raises:
-            HTTPError: When request fails due to invalid parameters, authentication issues, or server errors.
-        
+            Any: API response data.
+
         Tags:
-            audit-logs, paginated, async-job, management, important
+            Audit Logs
         """
-        path = "/v2/audit/logs"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "createdAfter": createdAfter,
-                "createdBefore": createdBefore,
-                "cursor": cursor,
-                "limit": limit,
-                "sorting": sorting,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        url = f"{self.base_url}/v2/audit/logs"
+        query_params = {k: v for k, v in [('createdAfter', createdAfter), ('createdBefore', createdBefore), ('cursor', cursor), ('limit', limit), ('sorting', sorting)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_organization_settings(self, org_id: Annotated[str, '(Required) id of the organization']) -> Any:
+    def get_organization_settings(self, org_id) -> Any:
         """
-        Retrieve organization settings including board classification configurations. Intended for Enterprise plan users with Company Admin role.
-        
+        Retrieves data classification settings for an organization, providing information on how data is categorized and handled within the specified organization.
+
         Args:
-            org_id: ID of the organization.
-        
+            org_id (string): org_id
+
         Returns:
-            Dictionary containing organization settings data from the API response
-        
-        Raises:
-            HTTPError: If the API request fails due to network issues, authentication errors, or invalid permissions
-        
+            Any: API response data.
+
         Tags:
-            retrieve, organization-settings, enterprise, management, important
+            Board classification: Organization level
         """
-        path = f"/v2/orgs/{org_id}/data-classification-settings"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/data-classification-settings"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def bulk_update_boards_classification(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], labelId: Annotated[float, ''] = None, notClassifiedOnly: Annotated[bool, ''] = None) -> Any:
+    def bulk_update_boards_classification(self, org_id, team_id, labelId=None, notClassifiedOnly=None) -> Any:
         """
-        Bulk updates board classification for either not-classified boards only or all boards in a team, depending on the provided parameters.
-        
+        Updates the data classification settings for a specific team in an organization using the "PATCH" method.
+
         Args:
-            org_id: ID of the organization.
-            team_id: ID of the team.
-            labelId: The ID of the label to apply for classification. Defaults to None.
-            notClassifiedOnly: A flag indicating whether to classify only not-classified boards. Defaults to None.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            labelId (number): labelId Example: '3000457366756291000'.
+            notClassifiedOnly (boolean): notClassifiedOnly
+                Example:
+                ```json
+                {
+                  "labelId": 3000457366756291000,
+                  "notClassifiedOnly": true
+                }
+                ```
+
         Returns:
-            The response from the server as JSON.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            classification, bulk-update, boards, management, important
+            Board classification: Team level
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
         request_body = {
-            "labelId": labelId,
-            "notClassifiedOnly": notClassifiedOnly,
+            'labelId': labelId,
+            'notClassifiedOnly': notClassifiedOnly,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/data-classification"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/data-classification"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team_settings(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team']) -> Any:
+    def get_team_settings(self, org_id, team_id) -> Any:
         """
-        Retrieves board classification settings for an existing team. Requires enterprise-level access and company admin privileges.
-        
+        Retrieves the data classification settings for a specific team within an organization.
+
         Args:
-            org_id: ID of the organization.
-            team_id: ID of the team.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+
         Returns:
-            Parsed JSON response containing team-level board classification settings.
-        
-        Raises:
-            requests.exceptions.HTTPError: If the API request fails due to invalid permissions, rate limits, or server errors (4xx/5xx status codes).
-        
+            Any: API response data.
+
         Tags:
-            retrieve, team-settings, board-classification, enterprise, management, important
+            Board classification: Team level
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team_settings(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], defaultLabelId: Annotated[float, ''] = None, enabled: Annotated[bool, ''] = None) -> Any:
+    def update_team_settings(self, org_id, team_id, defaultLabelId=None, enabled=None) -> Any:
         """
-        Updates team settings, specifically board classification settings for an existing team.
-        
+        Updates data classification settings for a specific team within an organization using the PATCH method.
+
         Args:
-            org_id: ID of the organization.
-            team_id: ID of the team.
-            defaultLabelId: Optional float specifying the default label ID.
-            enabled: Optional boolean indicating whether the setting is enabled.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            defaultLabelId (number): defaultLabelId Example: '3000457366756291000'.
+            enabled (boolean): enabled
+                Example:
+                ```json
+                {
+                  "defaultLabelId": 3000457366756291000,
+                  "enabled": true
+                }
+                ```
+
         Returns:
-            A JSON response from the server after updating the team settings.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            update, team, settings, board-classification, enterprise, important
+            Board classification: Team level
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
         request_body = {
-            "defaultLabelId": defaultLabelId,
-            "enabled": enabled,
+            'defaultLabelId': defaultLabelId,
+            'enabled': enabled,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_board_classification(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], board_id: Annotated[str, '(Required) Unique identifier of the board that you want to update.']) -> Any:
+    def get_board_classification(self, org_id, team_id, board_id) -> Any:
         """
-        Retrieve board classification details for an associated board. This endpoint is restricted to Enterprise plan users with Company Admin privileges.
-        
+        Retrieves data classification details for a specified organization, team, and board using the provided identifiers.
+
         Args:
-            org_id: ID of the organization.
-            team_id: ID of the team.
-            board_id: Unique identifier of the board.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            board_id (string): board_id
+
         Returns:
-            Response dictionary containing board classification data as returned by the Miro API
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for 4XX/5XX HTTP status codes when the API request fails, including invalid permissions or rate limits
-            ValueError: Raised if API response contains malformed JSON data
-        
+            Any: API response data.
+
         Tags:
-            board-classification, enterprise, api, important, board-management
+            Board classification: Board level
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_board_classification(self, org_id: Annotated[str, '(Required) id of the organization'], team_id: Annotated[str, '(Required) id of the team'], board_id: Annotated[str, '(Required) Unique identifier of the board that you want to update.'], labelId: Annotated[Any, ''] = None) -> Any:
+    def update_board_classification(self, org_id, team_id, board_id, labelId=None) -> Any:
         """
-        Updates the classification label for an existing board by modifying its label ID.
-        
+        Assigns data classifications to a board within a specified organization and team using the provided criteria and returns a success status upon completion.
+
         Args:
-            org_id: ID of the organization.
-            team_id: ID of the team.
-            board_id: Unique identifier of the board.
-            labelId: (Any) Identifier of the classification label to apply. Use None to remove existing classification.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            board_id (string): board_id
+            labelId (string): labelId
+                Example:
+                ```json
+                {
+                  "labelId": "3000457366756290996"
+                }
+                ```
+
         Returns:
-            Dict[str, Any]: Parsed JSON response containing the updated board details.
-        
-        Raises:
-            HTTPError: If server returns 4XX/5XX status code during API request, with specifics determined by Miro's API error responses.
-        
+            Any: API response data.
+
         Tags:
-            update, board-classification, management, important, async_job
+            Board classification: Board level
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "labelId": labelId,
+            'labelId': labelId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_cases(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the list of cases.'], limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None) -> Any:
+    def get_all_cases(self, org_id, limit=None, cursor=None) -> Any:
         """
-        Retrieves a paginated list of eDiscovery cases in an organization, supporting cursor-based pagination.
-        
+        Retrieves a list of cases for a specified organization using the "GET" method, allowing optional query parameters for pagination via "limit" and "cursor".
+
         Args:
-            org_id: The ID of the organization.
-            cursor: An indicator of pagination position. Leave empty for first page, use returned cursor from previous request for subsequent pages.
-            limit: Maximum number of items to return in the result list (required for pagination).
-        
+            org_id (string): org_id
+            limit (string): (Required) The maximum number of items in the result list. Example: '10'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: 'MTY2OTg4NTIwMDAwMHwxMjM='.
+
         Returns:
-            Response JSON containing paginated case results and next cursor position.
-        
-        Raises:
-            HTTPError: When the API request fails, indicated by non-2xx status codes.
-        
+            Any: API response data.
+
         Tags:
-            list, pagination, legal-holds, ediscovery, management, important
+            Legal holds
         """
-        path = f"/v2/orgs/{org_id}/cases"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/cases"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_case(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the case information.'], case_id: Annotated[str, '(Required) The ID of the case you want to retrieve.']) -> Any:
+    def get_case(self, org_id, case_id) -> Any:
         """
-        Retrieves case information from the organization, including details relevant to legal holds. This function requires specific permissions and is only available to Enterprise Guard users with both Company Admin and eDiscovery Admin roles.
-        
+        Retrieves a specific case for an organization with the provided org_id and case_id.
+
         Args:
-            org_id: The ID of the organization.
-            case_id: The ID of the case.
-        
+            org_id (string): org_id
+            case_id (string): case_id
+
         Returns:
-            A dictionary containing case details retrieved from the API response.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the API request fails due to unauthorized access, invalid parameters, or server-side issues.
-        
+            Any: API response data.
+
         Tags:
-            legal-holds, case-management, enterprise-guard, important
+            Legal holds
         """
-        path = f"/v2/orgs/{org_id}/cases/{case_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if case_id is None:
+            raise ValueError("Missing required parameter 'case_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/cases/{case_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_legal_holds_within_acase(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the list of legal holds within a case.'], case_id: Annotated[str, '(Required) The ID of the case for which you want to retrieve the list of legal holds.'], limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None) -> Any:
+    def get_all_legal_holds_within_acase(self, org_id, case_id, limit=None, cursor=None) -> Any:
         """
-        Retrieves a paginated list of all legal holds within a case for an organization, supporting cursor-based pagination.
-        
+        Retrieves a paginated list of legal holds for a specific case and organization using cursor-based pagination.
+
         Args:
-            org_id: The ID of the organization.
-            case_id: The ID of the case.
-            cursor: An indicator of the position of a page in the full set of results. Leave empty to retrieve the first page. Provide the cursor value from the previous response to fetch subsequent pages.
-            limit: (Required) The maximum number of items to include in the result list.
-        
+            org_id (string): org_id
+            case_id (string): case_id
+            limit (string): (Required) The maximum number of items in the result list. Example: '10'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: 'MTY2OTg4NTIwMDAwMHwxMjM='.
+
         Returns:
-            A parsed JSON response containing the list of legal holds and pagination metadata.
-        
-        Raises:
-            HTTPError: If the API request fails due to network issues, authentication errors, or invalid parameters.
-        
+            Any: API response data.
+
         Tags:
-            legal-holds, pagination, list, async-job, important, ediscovery, management
+            Legal holds
         """
-        path = f"/v2/orgs/{org_id}/cases/{case_id}/legal-holds"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if case_id is None:
+            raise ValueError("Missing required parameter 'case_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/cases/{case_id}/legal-holds"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_legal_hold_information(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the legal hold information.'], case_id: Annotated[str, '(Required) The ID of the case for which you want to retrieve the legal hold information.'], legal_hold_id: Annotated[str, '(Required) The ID of the legal hold you want to retrieve.']) -> Any:
+    def get_legal_hold_information(self, org_id, case_id, legal_hold_id) -> Any:
         """
-        Retrieve legal hold information for a case within an organization.
-        
+        Retrieves a specific legal hold for a case within an organization using the provided identifiers.
+
         Args:
-            org_id: The ID of the organization.
-            case_id: The ID of the case.
-            legal_hold_id: The ID of the legal hold.
-        
+            org_id (string): org_id
+            case_id (string): case_id
+            legal_hold_id (string): legal_hold_id
+
         Returns:
-            A JSON object containing legal hold information.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request encounters an error (e.g., server returns a 4xx or 5xx status code).
-        
+            Any: API response data.
+
         Tags:
-            legal-hold, management, organization, important
+            Legal holds
         """
-        path = f"/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if case_id is None:
+            raise ValueError("Missing required parameter 'case_id'")
+        if legal_hold_id is None:
+            raise ValueError("Missing required parameter 'legal_hold_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_content_items_under_legal_hold(self, org_id: Annotated[str, '(Required) The ID of the organization for which you want to retrieve the list of content items under hold.'], case_id: Annotated[str, '(Required) The ID of the case for which you want to retrieve the list of content items under hold.'], legal_hold_id: Annotated[str, '(Required) The ID of the legal hold for which you want to retrieve the list of content items under hold.'], limit: Annotated[Any, '(Required) The maximum number of items in the result list.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.\n'] = None) -> Any:
+    def get_content_items_under_legal_hold(self, org_id, case_id, legal_hold_id, limit=None, cursor=None) -> Any:
         """
-        Fetches content items under legal hold for review or exploration purposes.
-        
+        Retrieves a list of content items under a specific legal hold in a case for an organization, allowing for pagination using limit and cursor parameters.
+
         Args:
-            org_id: The ID of the organization.
-            case_id: The ID of the case.
-            legal_hold_id: The ID of the legal hold.
-            cursor: An indicator of the position of a page in the full set of results. To obtain the first page, leave it empty. To obtain subsequent pages, set it to the value returned in the cursor field of the previous request.
-            limit: The maximum number of items in the result list.
-        
+            org_id (string): org_id
+            case_id (string): case_id
+            legal_hold_id (string): legal_hold_id
+            limit (string): (Required) The maximum number of items in the result list. Example: '10'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: 'MTY2OTg4NTIwMDAwMHwxMjM='.
+
         Returns:
-            A list of content items under a specific legal hold.
-        
-        Raises:
-            HTTPError: Raised if there is an HTTP-level error during the request.
-        
+            Any: API response data.
+
         Tags:
-            review, legal-hold, management, important, enterprise
+            Legal holds
         """
-        path = f"/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}/content-items"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if case_id is None:
+            raise ValueError("Missing required parameter 'case_id'")
+        if legal_hold_id is None:
+            raise ValueError("Missing required parameter 'legal_hold_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}/content-items"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_board_export_job(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], request_id: Annotated[Any, '(Required) Unique identifier of the board export job.'] = None, boardFormat: Annotated[Any, ''] = None, boardIds: Annotated[list[Any], ''] = None) -> Any:
+    def create_board_export_job(self, org_id, request_id=None, boardFormat=None, boardIds=None) -> Any:
         """
-        Creates an export job for one or more boards using the specified format and identifiers.
-        
+        Exports board data for a specified organization using the "POST" method and returns a job status.
+
         Args:
-            org_id: Unique identifier of the organization.
-            boardFormat: Optional format for the board export.
-            boardIds: Optional list of IDs of boards to export.
-            request_id: Unique identifier for the board export job, required for tracking purposes.
-        
+            org_id (string): org_id
+            request_id (string): (Required) Unique identifier of the board export job. Example: '92343229-c532-446d-b8cb-2f155bedb807'.
+            boardFormat (string): boardFormat Example: 'SVG'.
+            boardIds (array): boardIds
+                Example:
+                ```json
+                {
+                  "boardFormat": "SVG",
+                  "boardIds": [
+                    "o9J_kzlUDmo="
+                  ]
+                }
+                ```
+
         Returns:
-            JSON response from the successful creation of a board export job.
-        
-        Raises:
-            requests.RequestException: Raised if there is a problem with the HTTP request, such as connection issues or invalid responses.
-        
+            Any: API response data.
+
         Tags:
-            export, job, board, async_job, enterprise, management, important
+            Board Export
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
         request_body = {
-            "boardFormat": boardFormat,
-            "boardIds": boardIds,
+            'boardFormat': boardFormat,
+            'boardIds': boardIds,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/boards/export/jobs"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "request_id": request_id,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        url = f"{self.base_url}/v2/orgs/{org_id}/boards/export/jobs"
+        query_params = {k: v for k, v in [('request_id', request_id)] if v is not None}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_board_export_job_status(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], job_id: Annotated[str, '(Required) Unique identifier of the board export job.']) -> Any:
+    def get_board_export_job_status(self, org_id, job_id) -> Any:
         """
-        Retrieve the status of a board export job, including completion state and any relevant metadata.
-        
+        Retrieves the status and details of a specified board export job for an organization using the API.
+
         Args:
-            org_id: Unique identifier of the organization.
-            job_id: Unique identifier of the board export job.
-        
+            org_id (string): org_id
+            job_id (string): job_id
+
         Returns:
-            A JSON response containing the job status details and metadata, typically including fields like 'status', 'createdAt', and 'downloadUrl'.
-        
-        Raises:
-            HTTPError: Raised for failed API requests (4xx/5xx responses)
-            JSONDecodeError: Raised if the response body contains invalid JSON
-        
+            Any: API response data.
+
         Tags:
-            retrieve, status-check, board-export, async-job, enterprise, important
+            Board Export
         """
-        path = f"/v2/orgs/{org_id}/boards/export/jobs/{job_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if job_id is None:
+            raise ValueError("Missing required parameter 'job_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/boards/export/jobs/{job_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_results_for_board_export_job(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], job_id: Annotated[str, '(Required) Unique identifier of the job.']) -> Any:
+    def get_results_for_board_export_job(self, org_id, job_id) -> Any:
         """
-        Retrieves the results of a board export job, providing information such as the S3 link to exported files.
-        
+        Retrieves the export results for a specific organization's board export job using the API.
+
         Args:
-            org_id: Unique identifier of the organization.
-            job_id: Unique identifier of the job.
-        
+            org_id (string): org_id
+            job_id (string): job_id
+
         Returns:
-            The result of the board export job in JSON format.
-        
-        Raises:
-            requests.HTTPError: Raised if an HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            export, enterprise, important
+            Board Export
         """
-        path = f"/v2/orgs/{org_id}/boards/export/jobs/{job_id}/results"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if job_id is None:
+            raise ValueError("Missing required parameter 'job_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/boards/export/jobs/{job_id}/results"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def retrieve_content_change_logs_of_board_items(self, org_id: Annotated[str, '(Required) Unique identifier of the organization.'], from_timestamp: Annotated[Any, '(Required) Filter content logs based on the date and time when the board item was last modified. This is the start date and time for the modified date duration.\nFormat: UTC, adheres to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), includes a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC)).\n'], to_timestamp: Annotated[Any, '(Required) Filter content logs based on the date and time when the board item was last modified. This is the end date and time for the modified date duration. Format: UTC, adheres to\n[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), includes a [trailing Z offset](https://en.wikipedia.org/wiki/ISO_8601#Coordinated_Universal_Time_(UTC)).\n'], board_ids: Annotated[Any, 'List of board IDs for which you want to retrieve the content logs.'] = None, emails: Annotated[Any, 'Filter content logs based on the list of emails of users who created, modified, or deleted the board item.'] = None, cursor: Annotated[Any, 'A cursor-paginated method returns a portion of the total set of results based on the limit specified and a cursor that points to the next portion of the results. To retrieve the next portion of the collection, set the cursor parameter equal to the cursor value you received in the response of the previous request.\n'] = None, limit: Annotated[Any, 'The maximum number of results to return per call. If the number of logs in the response is greater than the limit specified, the response returns the cursor parameter with a value.\n'] = None, sorting: Annotated[Any, 'Sort order in which you want to view the result set based on the modified date. To sort by an ascending modified date, specify `asc`. To sort by a descending modified date, specify `desc`.\n'] = None) -> Any:
+    def retrieve_content_change_logs_of_board_items(self, org_id, board_ids=None, emails=None, from_=None, to=None, cursor=None, limit=None, sorting=None) -> Any:
         """
-        Retrieve content change logs for board items, including actions like updates and deletions, filtered by boards, users, and time range with pagination support.
-        
+        Retrieves organization content logs with filtering options such as board IDs, email addresses, date ranges, and pagination parameters.
+
         Args:
-            org_id: Unique identifier of the organization.
-            from_timestamp: Start datetime for filtering modified items (UTC ISO 8601 format with trailing Z). Required parameter.
-            to_timestamp: End datetime for filtering modified items (UTC ISO 8601 format with trailing Z). Required parameter.
-            board_ids: List of board IDs for which to retrieve content logs. Multiple IDs can be specified.
-            emails: Filter logs by email addresses of users who modified board items.
-            cursor: Cursor for pagination. Use the value from previous response to retrieve next results.
-            limit: Maximum number of logs to return per request. Pagination required if exceeded.
-            sorting: Sort order by modification date: 'asc' for ascending or 'desc' for descending.
-        
+            org_id (string): org_id
+            board_ids (string): List of board IDs for which you want to retrieve the content logs. Example: 'o9J_kzlUDmo='.
+            emails (string): Filter content logs based on the list of emails of users who created, modified, or deleted the board item. Example: 'someone@domain.com'.
+            from_ (string): (Required) Filter content logs based on the date and time when the board item was last modified. This is the start date and time for the modified date duration.
+        Format: UTC, adheres to [ISO 8601]( includes a [trailing Z offset]( Example: '2022-03-30T17:26:50Z'.
+            to (string): (Required) Filter content logs based on the date and time when the board item was last modified. This is the end date and time for the modified date duration. Format: UTC, adheres to
+        [ISO 8601]( includes a [trailing Z offset]( Example: '2023-03-30T17:26:50Z'.
+            cursor (string): A cursor-paginated method returns a portion of the total set of results based on the limit specified and a cursor that points to the next portion of the results. To retrieve the next portion of the collection, set the cursor parameter equal to the cursor value you received in the response of the previous request. Example: 'MTY2OTg4NTIwMDAwMHwxMjM='.
+            limit (string): The maximum number of results to return per call. If the number of logs in the response is greater than the limit specified, the response returns the cursor parameter with a value. Example: '1000'.
+            sorting (string): Sort order in which you want to view the result set based on the modified date. To sort by an ascending modified date, specify `asc`. To sort by a descending modified date, specify `desc`. Example: 'asc'.
+
         Returns:
-            Response JSON containing paginated content change logs and cursor for subsequent requests.
-        
-        Raises:
-            requests.HTTPError: Raised for API request failures such as invalid parameters, authentication errors, or when the required scope is missing.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, logs, board, paginated, enterprise, content-management, async_job, important
+            Board Content Logs
         """
-        path = f"/v2/orgs/{org_id}/content-logs/items"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "board_ids": board_ids,
-                "emails": emails,
-                "from": from_timestamp,
-                "to": to_timestamp,
-                "cursor": cursor,
-                "limit": limit,
-                "sorting": sorting,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/content-logs/items"
+        query_params = {k: v for k, v in [('board_ids', board_ids), ('emails', emails), ('from', from_), ('to', to), ('cursor', cursor), ('limit', limit), ('sorting', sorting)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def reset_all_sessions_of_auser(self, email: Annotated[Any, '(Required) Email ID of the user whose sessions you want to reset. Note that this user will be signed out from all devices.'] = None) -> Any:
+    def reset_all_sessions_of_auser(self, email=None) -> Any:
         """
-        Reset all active sessions for a specified user, requiring them to sign in again across all devices.
-        
+        Resets all active sessions for a specified user (identified by email), requiring reauthentication.
+
         Args:
-            email: The email ID of the user whose sessions are to be reset (Annotated as required).
-        
+            email (string): (Required) Email ID of the user whose sessions you want to reset. Note that this user will be signed out from all devices. Example: 'john.smith@example.com'.
+
         Returns:
-            JSON response from the server after resetting the sessions.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            reset, session-management, security, async, important
+            Reset all sessions of a user
         """
-        path = "/v2/sessions/reset_all"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "email": email,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, params=query_params)
+        url = f"{self.base_url}/v2/sessions/reset_all"
+        query_params = {k: v for k, v in [('email', email)] if v is not None}
+        response = self._post(url, data={}, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_organization_info(self, org_id: Annotated[str, '(Required) id of the organization']) -> Any:
+    def get_organization_info(self, org_id) -> Any:
         """
-        Retrieves organization information from the Miro API, including details available only to Enterprise plan users with Company Admin role.
-        
+        Retrieves information about an organization specified by its ID using the API endpoint "/v2/orgs/{org_id}" with the GET method.
+
         Args:
-            org_id: ID of the organization.
-        
+            org_id (string): org_id
+
         Returns:
-            dict: Parsed JSON response containing organization details from the Miro API.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails, typically due to insufficient permissions (non-Admin users), invalid organization scope, or authentication errors. Also occurs for requests made by non-Enterprise plan users.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, organizations, api, enterprise-only, important
+            Organizations
         """
-        path = f"/v2/orgs/{org_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_organization_members(self, org_id: Annotated[str, '(Required) id of the organization'], emails: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None, license: Annotated[Any, ''] = None, active: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None) -> Any:
+    def get_organization_members(self, org_id, emails=None, role=None, license=None, active=None, cursor=None, limit=None) -> Any:
         """
-        Retrieves organization members based on specified criteria like emails or cursor.
-        
+        Retrieves a list of members from an organization specified by `{org_id}` using query parameters for filtering by email, role, license status, and member activity, with pagination options.
+
         Args:
-            org_id: ID of the organization.
-            active: Optional parameter to filter by active status.
-            cursor: Optional cursor for pagination.
-            emails: Optional list of emails to filter members.
-            license: Optional license status to filter members.
-            limit: Optional limit on the number of members to return.
-            role: Optional role to filter members.
-        
+            org_id (string): org_id
+            emails (string): Comma-separated list of member email addresses to filter the organization membership list. Example: 'someEmail1@miro.com'.
+            role (string): Filters members by their assigned role within the organization. Example: 'organization_internal_admin'.
+            license (string): Filter results by a specific license when retrieving members of an organization. Example: 'full'.
+            active (string): A boolean query parameter indicating whether to include only active members in the response. Example: 'false'.
+            cursor (string): Used for cursor-based pagination, this parameter specifies a unique identifier or token that marks the position in the dataset, allowing the retrieval of the next or previous page of results. Example: '3055557345821141000'.
+            limit (string): The **limit** parameter specifies the maximum number of member records to return in a single response for the organization identified by `{org_id}`. Example: '100'.
+
         Returns:
-            A JSON response containing the organization members matching the specified criteria.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request to retrieve members fails (e.g., due to network issues or invalid server responses).
-        
+            Any: API response data.
+
         Tags:
-            organization, members, fetch, enterprise, important
+            Organization Members
         """
-        path = f"/v2/orgs/{org_id}/members"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "emails": emails,
-                "role": role,
-                "license": license,
-                "active": active,
-                "cursor": cursor,
-                "limit": limit,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/members"
+        query_params = {k: v for k, v in [('emails', emails), ('role', role), ('license', license), ('active', active), ('cursor', cursor), ('limit', limit)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_organization_member(self, org_id: Annotated[str, '(Required) id of the organization'], member_id: Annotated[str, '(Required) id of the organization member']) -> Any:
+    def get_organization_member(self, org_id, member_id) -> Any:
         """
-        Retrieves organization member information from the Miro API with Company Admin permissions.
-        
+        Retrieves a specific member's details within an organization using their unique identifiers.
+
         Args:
-            org_id: ID of the organization.
-            member_id: ID of the organization member.
-        
+            org_id (string): org_id
+            member_id (string): member_id
+
         Returns:
-            Dict[str, Any]: JSON response containing organization member details
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP request failures (4xx/5xx status codes), indicating authentication errors, permissions issues, or API rate limits exceeded
-        
+            Any: API response data.
+
         Tags:
-            organization-members, management, enterprise, important
+            Organization Members
         """
-        path = f"/v2/orgs/{org_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/members/{member_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_boards(self, team_id: Annotated[Any, ''] = None, project_id: Annotated[Any, ''] = None, query: Annotated[Any, ''] = None, owner: Annotated[Any, ''] = None, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None, sort: Annotated[Any, ''] = None) -> Any:
+    def get_boards(self, team_id=None, project_id=None, query=None, owner=None, limit=None, offset=None, sort=None) -> Any:
         """
-        Retrieves a list of boards accessible to the user, allowing filtering by team, project, and other parameters.
-        
+        Retrieves a list of boards filtered by team, project, search query, owner, and pagination parameters.
+
         Args:
-            limit: Limits the number of returned boards (pagination).
-            offset: Offset for paginated results.
-            owner: Filters results by owner ID.
-            project_id: Filters boards by associated project ID.
-            query: Free-text search query for board titles/descriptions.
-            sort: Sorting criteria for results (field:direction format).
-            team_id: Filters boards by associated team ID.
-        
+            team_id (string): The `team_id` parameter specifies the identifier of the team to be queried in conjunction with the `GET /v2/boards` operation. Example: '{{team_id}}'.
+            project_id (string): The `project_id` query parameter specifies the unique identifier of the project associated with the API request.
+            query (string): A search parameter to filter or specify which boards to retrieve.
+            owner (string): Filters results to include only boards owned by the specified user.
+            limit (string): Specifies the maximum number of results to return in response to a GET operation on the "/v2/boards" endpoint.
+            offset (string): Specifies the starting position in the dataset to exclude the first N items from the response.
+            sort (string): Specifies the field(s) to sort results by, using comma-separated values with optional +/- prefixes for ascending/descending order (e.g., "+date,-title"). Example: 'default'.
+
         Returns:
-            Parsed JSON response containing board data and metadata.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful API responses (4XX/5XX status codes).
-        
+            Any: API response data.
+
         Tags:
-            boards, list, filter, pagination, async_job, management, important
+            Boards
         """
-        path = "/v2/boards"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "team_id": team_id,
-                "project_id": project_id,
-                "query": query,
-                "owner": owner,
-                "limit": limit,
-                "offset": offset,
-                "sort": sort,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        url = f"{self.base_url}/v2/boards"
+        query_params = {k: v for k, v in [('team_id', team_id), ('project_id', project_id), ('query', query), ('owner', owner), ('limit', limit), ('offset', offset), ('sort', sort)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def copy_board(self, copy_from: Annotated[Any, '(Required) Unique identifier (ID) of the board that you want to copy.'] = None, description: Annotated[Any, ''] = None, name: Annotated[Any, ''] = None, policy: Annotated[dict[str, Any], ''] = None, teamId: Annotated[Any, ''] = None) -> Any:
+    def copy_board(self, copy_from=None, description=None, name=None, policy=None, teamId=None) -> Any:
         """
-        Creates a copy of an existing board, allowing updates to name, description, sharing policy, and permissions policy.
-        
+        Updates a board's configuration (with optional source copying) and returns the updated board details.
+
         Args:
-            copy_from: Unique identifier (ID) of the board to copy.
-            description: Optional description for the new board.
-            name: Optional name for the new board.
-            policy: Optional policy settings for the new board.
-            teamId: Optional team ID for the new board.
-        
+            copy_from (string): (Required) Unique identifier (ID) of the board that you want to copy. Example: 'o9J_kzlUDmo='.
+            description (string): description Example: 'Description'.
+            name (string): name Example: 'Untitled'.
+            policy (object): policy
+            teamId (string): teamId
+                Example:
+                ```json
+                {
+                  "description": "Description",
+                  "name": "Untitled",
+                  "policy": {
+                    "permissionsPolicy": {
+                      "collaborationToolsStartAccess": "all_editors",
+                      "copyAccess": "anyone",
+                      "sharingAccess": "team_members_with_editing_rights"
+                    },
+                    "sharingPolicy": {
+                      "access": "private",
+                      "inviteToAccountAndBoardLinkAccess": "no_access",
+                      "organizationAccess": "private",
+                      "teamAccess": "private"
+                    }
+                  },
+                  "teamId": "{{team_id}}"
+                }
+                ```
+
         Returns:
-            The response from creating the new board, represented as JSON.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails.
-        
+            Any: API response data.
+
         Tags:
-            copy, board, management, important
+            Boards
         """
         request_body = {
-            "description": description,
-            "name": name,
-            "policy": policy,
-            "teamId": teamId,
+            'description': description,
+            'name': name,
+            'policy': policy,
+            'teamId': teamId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = "/v2/boards"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "copy_from": copy_from,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        url = f"{self.base_url}/v2/boards"
+        query_params = {k: v for k, v in [('copy_from', copy_from)] if v is not None}
         response = self._put(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_board(self, description: Annotated[Any, ''] = None, name: Annotated[Any, ''] = None, policy: Annotated[dict[str, Any], ''] = None, projectId: Annotated[Any, ''] = None, teamId: Annotated[Any, ''] = None) -> Any:
+    def create_board(self, description=None, name=None, policy=None, projectId=None, teamId=None) -> Any:
         """
-        Creates a new board with specified attributes and sharing policies.
-        
+        Creates a new board resource and returns a success status upon completion.
+
         Args:
-            description: Optional description of the board.
-            name: Name of the board to create.
-            policy: Dictionary containing sharing policies for the board.
-            projectId: ID of the associated project.
-            teamId: ID of the team owning the board.
-        
+            description (string): description Example: 'Description'.
+            name (string): name Example: 'Untitled'.
+            policy (object): policy
+            projectId (string): projectId Example: '<value>'.
+            teamId (string): teamId
+                Example:
+                ```json
+                {
+                  "description": "Description",
+                  "name": "Untitled",
+                  "policy": {
+                    "permissionsPolicy": {
+                      "collaborationToolsStartAccess": "all_editors",
+                      "copyAccess": "anyone",
+                      "sharingAccess": "team_members_with_editing_rights"
+                    },
+                    "sharingPolicy": {
+                      "access": "private",
+                      "inviteToAccountAndBoardLinkAccess": "no_access",
+                      "organizationAccess": "private",
+                      "teamAccess": "private"
+                    }
+                  },
+                  "projectId": "<value>",
+                  "teamId": "{{team_id}}"
+                }
+                ```
+
         Returns:
-            Dictionary containing the created board details from API response.
-        
-        Raises:
-            HTTPError: If API request fails due to invalid parameters, permissions, or rate limits.
-        
+            Any: API response data.
+
         Tags:
-            boards, create, management, async_job, important
+            Boards
         """
         request_body = {
-            "description": description,
-            "name": name,
-            "policy": policy,
-            "projectId": projectId,
-            "teamId": teamId,
+            'description': description,
+            'name': name,
+            'policy': policy,
+            'projectId': projectId,
+            'teamId': teamId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = "/v2/boards"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that you want to delete.']) -> Any:
+    def get_specific_board(self, board_id) -> Any:
         """
-        Retrieves information about a specific board from the Miro API.
-        
+        Retrieves information about a specific board identified by its ID using the API endpoint "/v2/boards/{board_id}" with the GET method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-        
+            board_id (string): board_id
+
         Returns:
-            A JSON object containing board data returned by the API.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails, typically due to invalid permissions, missing board, or rate limits.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, board, api, boards-read, management, important
+            Boards
         """
-        path = f"/v2/boards/{board_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that you want to delete.']) -> Any:
+    def delete_board(self, board_id) -> Any:
         """
-        Deletes a board, moving it to the trash where it can be restored within 90 days.
-        
+        Deletes a specific board identified by its ID using the "DELETE" method, effectively removing it from the system and returning a success status when completed.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-        
+            board_id (string): board_id
+
         Returns:
-            The JSON response from the deletion request
-        
-        Raises:
-            HTTPError: Raised if there is an issue with the HTTP request, such as a non-200 status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, board, management, important
+            Boards
         """
-        path = f"/v2/boards/{board_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that you want to delete.'], description: Annotated[Any, ''] = None, name: Annotated[Any, ''] = None, policy: Annotated[dict[str, Any], ''] = None, projectId: Annotated[Any, ''] = None, teamId: Annotated[Any, ''] = None) -> Any:
+    def update_board(self, board_id, description=None, name=None, policy=None, projectId=None, teamId=None) -> Any:
         """
-        Updates a specific board by modifying its description, name, policy, project ID, or team ID.
-        
+        Updates a Trello board identified by `{board_id}` using the Trello API and returns a status message.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            description: The new description for the board.
-            name: The new name for the board.
-            policy: The new policy for the board, represented as a dictionary.
-            projectId: The ID of the project to which the board belongs.
-            teamId: The ID of the team associated with the board.
-        
+            board_id (string): board_id
+            description (string): description Example: 'Description'.
+            name (string): name Example: 'Untitled'.
+            policy (object): policy
+            projectId (string): projectId Example: '<value>'.
+            teamId (string): teamId
+                Example:
+                ```json
+                {
+                  "description": "Description",
+                  "name": "Untitled",
+                  "policy": {
+                    "permissionsPolicy": {
+                      "collaborationToolsStartAccess": "all_editors",
+                      "copyAccess": "anyone",
+                      "sharingAccess": "team_members_with_editing_rights"
+                    },
+                    "sharingPolicy": {
+                      "access": "private",
+                      "inviteToAccountAndBoardLinkAccess": "no_access",
+                      "organizationAccess": "private",
+                      "teamAccess": "private"
+                    }
+                  },
+                  "projectId": "<value>",
+                  "teamId": "{{team_id}}"
+                }
+                ```
+
         Returns:
-            The updated board data in JSON format.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails or if the API endpoint returns an error status code.
-        
+            Any: API response data.
+
         Tags:
-            update, boards, management, important
+            Boards
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "description": description,
-            "name": name,
-            "policy": policy,
-            "projectId": projectId,
-            "teamId": teamId,
+            'description': description,
+            'name': name,
+            'policy': policy,
+            'projectId': projectId,
+            'teamId': teamId,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_app_card_item(self, board_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Creates an app card item and adds it to a Miro board, constructing the request from provided parameters.
-        
+        Creates a new app card on a specified board using the "POST" method, identified by the path "/v2/boards/{board_id}/app_cards".
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing app card content and metadata (e.g., custom fields)
-            geometry: Dictionary specifying dimensions and shape of the app card
-            parent: Dictionary identifying the parent element/container for the app card
-            position: Dictionary defining positioning coordinates (x/y axis) on the board
-            style: Dictionary containing styling attributes like color and border
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "description": "Sample app card description",
+                    "fields": [
+                      {
+                        "fillColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconShape": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconUrl": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "textColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "tooltip": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "value": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        }
+                      },
+                      {
+                        "fillColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconShape": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconUrl": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "textColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "tooltip": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "value": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        }
+                      }
+                    ],
+                    "status": "disconnected",
+                    "title": "sample app card item"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "fillColor": "#2d9bf0"
+                  }
+                }
+                ```
+
         Returns:
-            Parsed JSON response containing created app card details
-        
-        Raises:
-            HTTPError: On API request failure (4xx/5xx status codes)
-        
+            Any: API response data.
+
         Tags:
-            app-cards, create, board-items, async-jobs, management, important
+            App Cards
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/app_cards"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/app_cards"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_app_card_item(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific app card item on a Miro board.
-        
+        Retrieves the details of an app card with the specified item ID from a board using the GET method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            Dictionary containing the app card item data, or None if unavailable (depends on API response structure)
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP request failures (4XX client errors or 5XX server errors)
-        
+            Any: API response data.
+
         Tags:
-            app-cards, retrieve, api-client, management, important
+            App Cards
         """
-        path = f"/v2/boards/{board_id}/app_cards/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/app_cards/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_app_card_item(self, board_id, item_id) -> Any:
         """
-        Deletes an app card item from a board, requiring the boards:write scope and subject to rate limiting at Level 3.
-        
+        Deletes an app card item from the specified board using the DELETE method and returns a success status upon completion.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            item_id: Unique identifier (ID) of the item that you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            The JSON response from the server after deletion.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returned an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, app-cards, boards-management, important
+            App Cards
         """
-        path = f"/v2/boards/{board_id}/app_cards/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/app_cards/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_app_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_app_card_item(self, board_id, item_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Updates an app card item's properties including data, geometry, parent relationship, position, and style on a Miro board.
-        
+        Updates a specific app card on the specified board using partial modifications via the PATCH method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing app card data properties to update
-            geometry: Dictionary specifying geometric properties like dimensions
-            parent: Dictionary defining parent item relationships
-            position: Dictionary containing positioning information
-            style: Dictionary describing visual style attributes
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "description": "Sample app card description",
+                    "fields": [
+                      {
+                        "fillColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconShape": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconUrl": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "textColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "tooltip": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "value": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        }
+                      },
+                      {
+                        "fillColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconShape": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "iconUrl": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "textColor": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "tooltip": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        },
+                        "value": {
+                          "value": "<Error: Too many levels of nesting to fake this schema>"
+                        }
+                      }
+                    ],
+                    "status": "disconnected",
+                    "title": "sample app card item"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "fillColor": "#2d9bf0"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated app card item's data from the API response
-        
-        Raises:
-            HTTPError: When the API request fails (e.g., invalid parameters, authentication errors, or server issues)
-        
+            Any: API response data.
+
         Tags:
-            app-cards, update, board-items, important, management
+            App Cards
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/app_cards/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/app_cards/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_card_item(self, board_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Creates a new card item and adds it to a Miro board with specified properties.
-        
+        Creates a new card on the specified board using the provided data and returns the operation status upon success.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing card-specific data (content/metadata) [1]
-            geometry: Dictionary defining card dimensions and shape characteristics [1]
-            parent: Dictionary specifying parent item/container for the card [1]
-            position: Dictionary containing coordinates for card placement [1]
-            style: Dictionary containing visual styling properties for the card [1]
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "assigneeId": "3074457362577955300",
+                    "description": "sample card description",
+                    "dueDate": "2023-10-12T22:00:55.000Z",
+                    "title": "sample card item"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "cardTheme": "#2d9bf0"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary representing created card item from Miro API response after successful creation [1]
-        
-        Raises:
-            HTTPError: Raised for unsuccessful HTTP requests (4XX/5XX status codes) during API communication [1]
-            ValueError: Raised if required parameters are missing or invalid based on Miro API requirements [1]
-        
+            Any: API response data.
+
         Tags:
-            create, card, board, miro, api-integration, important, async_job
+            Cards
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/cards"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/cards"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_card_item(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific card item on a board
-        
+        Retrieves a specific card from a board using its board ID and item ID, returning relevant details in the response.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            The JSON response containing card item information
-        
-        Raises:
-            requests.RequestException: Raised if there is a problem with the HTTP request (e.g., network issues or invalid URL).
-            ValueError: Raised if the response status indicates an error.
-        
+            Any: API response data.
+
         Tags:
-            important, card, boards, read, information
+            Cards
         """
-        path = f"/v2/boards/{board_id}/cards/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/cards/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_card_item(self, board_id, item_id) -> Any:
         """
-        Deletes a card item from the Miro board.
-        
+        Deletes a specific card item from a board by ID and returns a success status upon removal.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            JSON response from the server after deletion.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, card, management, important
+            Cards
         """
-        path = f"/v2/boards/{board_id}/cards/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/cards/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_card_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_card_item(self, board_id, item_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Updates a card item on a board based on the provided data and style properties.
-        
+        Updates specified fields of a card item on a board using partial modifications.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: A dictionary containing data properties for the card item.
-            geometry: A dictionary defining the geometry of the card item.
-            parent: A dictionary specifying the parent item or container.
-            position: A dictionary describing the position of the card item.
-            style: A dictionary containing style properties for the card item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "assigneeId": "3074457362577955300",
+                    "description": "sample card description",
+                    "dueDate": "2023-10-12T22:00:55.000Z",
+                    "title": "sample card item"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "cardTheme": "#2d9bf0"
+                  }
+                }
+                ```
+
         Returns:
-            The updated card item data as JSON.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            update, card, management, async_job, important
+            Cards
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/cards/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/cards/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_connectors(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a list of connectors.'], limit: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
+    def get_connectors(self, board_id, limit=None, cursor=None) -> Any:
         """
-        Retrieves a list of connectors for a specific board using a cursor-based approach.
-        
+        Retrieves a list of connectors associated with a specific board, allowing optional filtering by limit and cursor parameters.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: Cursor value for pagination, used to retrieve the next portion of results.
-            limit: Maximum number of connectors to return in the response.
-        
+            board_id (string): board_id
+            limit (string): Specifies the maximum number of connectors to return in a single response page. Example: '10'.
+            cursor (string): A unique identifier used for cursor pagination, allowing incremental retrieval of data in a specific order, typically included in subsequent GET requests to fetch the next or previous page of results.
+
         Returns:
-            A JSON response containing the list of connectors and a cursor for pagination.
-        
-        Raises:
-            requests.HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            connectors, board, pagination, important
+            Connectors
         """
-        path = f"/v2/boards/{board_id}/connectors"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/connectors"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a list of connectors.'], captions: Annotated[list[Any], ''] = None, endItem: Annotated[dict[str, Any], ''] = None, shape: Annotated[Any, ''] = None, startItem: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_connector(self, board_id, captions=None, endItem=None, shape=None, startItem=None, style=None) -> Any:
         """
-        Creates a connector on a board by sending a POST request with specified parameters.
-        
+        Establishes a connection to a specific board by creating a new connector using the API at the path "/v2/boards/{board_id}/connectors" with the POST method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            captions: List of captions for the connector.
-            endItem: Dictionary representing the end item of the connector.
-            shape: Shape of the connector.
-            startItem: Dictionary representing the start item of the connector.
-            style: Dictionary defining the style of the connector.
-        
+            board_id (string): board_id
+            captions (array): captions Example: "[{'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}]".
+            endItem (object): endItem
+            shape (string): shape Example: 'straight'.
+            startItem (object): startItem
+            style (object): style
+                Example:
+                ```json
+                {
+                  "captions": [
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    }
+                  ],
+                  "endItem": {
+                    "id": "3458764517517818867",
+                    "position": {
+                      "x": "50%",
+                      "y": "0%"
+                    },
+                    "snapTo": "auto"
+                  },
+                  "shape": "straight",
+                  "startItem": {
+                    "id": "3458764517517818867",
+                    "position": {
+                      "x": "50%",
+                      "y": "0%"
+                    },
+                    "snapTo": "auto"
+                  },
+                  "style": {
+                    "color": "#9510ac",
+                    "endStrokeCap": "none",
+                    "fontSize": "15",
+                    "startStrokeCap": "none",
+                    "strokeColor": "#2d9bf0",
+                    "strokeStyle": "normal",
+                    "strokeWidth": "2.0",
+                    "textOrientation": "horizontal"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response from the server after creating the connector.
-        
-        Raises:
-            requests.HTTPError: Raised when the HTTP request encounters an error.
-        
+            Any: API response data.
+
         Tags:
-            create, connector, important, boards, management
+            Connectors
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "captions": captions,
-            "endItem": endItem,
-            "shape": shape,
-            "startItem": startItem,
-            "style": style,
+            'captions': captions,
+            'endItem': endItem,
+            'shape': shape,
+            'startItem': startItem,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/connectors"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/connectors"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the connector.'], connector_id: Annotated[str, '(Required) Unique identifier (ID) of the connector that you want to delete.']) -> Any:
+    def get_specific_connector(self, board_id, connector_id) -> Any:
         """
-        Retrieves information for a specific connector on a board.
-        
+        Retrieves a specific connector from a board using the provided board and connector identifiers.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            connector_id: Unique identifier (ID) of the connector.
-        
+            board_id (string): board_id
+            connector_id (string): connector_id
+
         Returns:
-            A JSON response containing the information about the specific connector.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if there is an issue with the HTTP request, such as a failed status code.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, connectors, management, important
+            Connectors
         """
-        path = f"/v2/boards/{board_id}/connectors/{connector_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if connector_id is None:
+            raise ValueError("Missing required parameter 'connector_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/connectors/{connector_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the connector.'], connector_id: Annotated[str, '(Required) Unique identifier (ID) of the connector that you want to delete.']) -> Any:
+    def delete_connector(self, board_id, connector_id) -> Any:
         """
-        Deletes the specified connector from the board.
-        
+        Deletes a specific connector associated with a board, identified by the provided `board_id` and `connector_id`, removing it along with any related configurations.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            connector_id: Unique identifier (ID) of the connector.
-        
+            board_id (string): board_id
+            connector_id (string): connector_id
+
         Returns:
-            The JSON response from the server after deletion.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, connectors, management, important
+            Connectors
         """
-        path = f"/v2/boards/{board_id}/connectors/{connector_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if connector_id is None:
+            raise ValueError("Missing required parameter 'connector_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/connectors/{connector_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_connector(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the connector.'], connector_id: Annotated[str, '(Required) Unique identifier (ID) of the connector that you want to delete.'], captions: Annotated[list[Any], ''] = None, endItem: Annotated[dict[str, Any], ''] = None, shape: Annotated[Any, ''] = None, startItem: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_connector(self, board_id, connector_id, captions=None, endItem=None, shape=None, startItem=None, style=None) -> Any:
         """
-        Updates a connector's properties on a board including captions, end/start items, shape, and style. Applies provided changes and returns updated connector data.
-        
+        Updates a connector on a specific board using the PATCH method, returning a status message upon successful modification.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            connector_id: Unique identifier (ID) of the connector.
-            captions: List of captions to update on the connector (None preserves existing values)
-            endItem: Dictionary defining the end item properties (None preserves existing values)
-            shape: Updated connector shape specification (None preserves existing value)
-            startItem: Dictionary defining the start item properties (None preserves existing values)
-            style: Dictionary containing style properties to update (None preserves existing values)
-        
+            board_id (string): board_id
+            connector_id (string): connector_id
+            captions (array): captions Example: "[{'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}, {'content': '<p>Caption text</p>', 'position': '50%', 'textAlignVertical': 'top'}]".
+            endItem (object): endItem
+            shape (string): shape Example: 'straight'.
+            startItem (object): startItem
+            style (object): style
+                Example:
+                ```json
+                {
+                  "captions": [
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    },
+                    {
+                      "content": "<p>Caption text</p>",
+                      "position": "50%",
+                      "textAlignVertical": "top"
+                    }
+                  ],
+                  "endItem": {
+                    "id": "3458764517517818867",
+                    "position": {
+                      "x": "50%",
+                      "y": "0%"
+                    },
+                    "snapTo": "auto"
+                  },
+                  "shape": "straight",
+                  "startItem": {
+                    "id": "3458764517517818867",
+                    "position": {
+                      "x": "50%",
+                      "y": "0%"
+                    },
+                    "snapTo": "auto"
+                  },
+                  "style": {
+                    "color": "#9510ac",
+                    "endStrokeCap": "none",
+                    "fontSize": "15",
+                    "startStrokeCap": "none",
+                    "strokeColor": "#2d9bf0",
+                    "strokeStyle": "normal",
+                    "strokeWidth": "2.0",
+                    "textOrientation": "horizontal"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated connector data from the API response
-        
-        Raises:
-            requests.HTTPError: Raised for invalid requests (4XX client errors) or server failures (5XX errors)
-        
+            Any: API response data.
+
         Tags:
-            connector, update, board, miro, api-integration, management, important
+            Connectors
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if connector_id is None:
+            raise ValueError("Missing required parameter 'connector_id'")
         request_body = {
-            "captions": captions,
-            "endItem": endItem,
-            "shape": shape,
-            "startItem": startItem,
-            "style": style,
+            'captions': captions,
+            'endItem': endItem,
+            'shape': shape,
+            'startItem': startItem,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/connectors/{connector_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/connectors/{connector_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_document_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_document_item_using_url(self, board_id, data=None, geometry=None, parent=None, position=None) -> Any:
         """
-        Create a document item on a board using a URL, adding it with specified data, geometry, position, and parent relationships.
-        
+        Adds a document to a specified board using the POST method and returns a status message.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            data: Dictionary containing document URL and metadata (Annotated as dict[str, Any])
-            geometry: Dictionary defining dimensions and visual properties of the item (Annotated as dict[str, Any])
-            parent: Dictionary specifying parent item relationships (Annotated as dict[str, Any])
-            position: Dictionary containing positional coordinates (x/y) for board placement (Annotated as dict[str, Any])
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "title": "Sample document title",
+                    "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "rotation": 0,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created document item's details from the API response
-        
-        Raises:
-            requests.HTTPError: Raised for unsuccessful API responses (4XX/5XX status codes)
-        
+            Any: API response data.
+
         Tags:
-            create, document, async_job, management, important
+            Documents
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/documents"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/documents"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_document_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_document_item(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific document item on a board
-        
+        Retrieves a specific document from a board using the provided board ID and item ID.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            Parsed JSON response containing the document item details.
-        
-        Raises:
-            requests.HTTPError: If the HTTP request fails, such as due to invalid board ID, missing permissions, or rate-limiting.
-        
+            Any: API response data.
+
         Tags:
-            get, document, board, rest-api, important
+            Documents
         """
-        path = f"/v2/boards/{board_id}/documents/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/documents/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_document_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_document_item(self, board_id, item_id) -> Any:
         """
-        Deletes a document item from the board, requiring a specific scope and rate limit tier.
-        
+        Deletes a specified document from a board using its unique identifier and returns a success status upon completion.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            item_id: Unique identifier (ID) of the item that you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            Parsed JSON response containing the result of the deletion operation
-        
-        Raises:
-            HTTPError: Raised for unsuccessful HTTP responses (status codes >= 400), such as invalid permissions, missing document, or rate limit violations
-        
+            Any: API response data.
+
         Tags:
-            delete, management, documents, board, important
+            Documents
         """
-        path = f"/v2/boards/{board_id}/documents/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/documents/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_document_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_document_item_using_url(self, board_id, item_id, data=None, geometry=None, parent=None, position=None) -> Any:
         """
-        Updates a document item using a URL by sending a PATCH request with the provided data, geometry, parent, and position.
-        
+        Updates a specific document within a board using partial modifications and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing data to update. Default is None.
-            geometry: Dictionary containing geometry to update. Default is None.
-            parent: Dictionary containing parent information to update. Default is None.
-            position: Dictionary containing position to update. Default is None.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "title": "<value>",
+                    "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "rotation": 0,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
         Returns:
-            Returns the response from the API as JSON.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            update, document, patch, api-call, important
+            Documents
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/documents/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/documents/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_document_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], request_body: Annotated[Any, ''] = None) -> Any:
+    def create_embed_item(self, board_id, data=None, geometry=None, parent=None, position=None) -> Any:
         """
-        Creates a document item on a board by uploading a file from the user's device.
-        
+        Creates an embed associated with a specific board, returning the result upon successful creation.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            request_body: Data containing file details and board specifications (format not explicitly documented)
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "mode": "inline",
+                    "previewUrl": "https://miro.com/static/images/page/mr-index/localization/en/slider/ideation_brainstorming.png",
+                    "url": "https://www.youtube.com/watch?v=HlVSNEiFCBk"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing created document item data from API response
-        
-        Raises:
-            HTTPError: If API request fails due to invalid scope, rate limiting, or server error
-        
+            Any: API response data.
+
         Tags:
-            create, document, file-upload, async_job, management, important
+            Embeds
         """
-        request_body = request_body
-        path = f"/v2/boards/{board_id}/documents"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        request_body = {
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/v2/boards/{board_id}/embeds"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_document_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to update the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to update.'], request_body: Annotated[Any, ''] = None) -> Any:
+    def get_embed_item(self, board_id, item_id) -> Any:
         """
-        Updates a document item on a Miro board using a file from a connected device. Requires boards:write scope.
-        
+        Retrieves an embedded item from a specified board using the provided board and item identifiers.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to update the item.
-            item_id: Unique identifier (ID) of the item that you want to update.
-            request_body: Payload containing image data and configuration (type and structure determined by Miro API specifications)
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            Dict containing updated document metadata from Miro API response
-        
-        Raises:
-            HTTPError: On API request failure (4xx/5xx status codes), including invalid permissions, missing items, or rate limits
-        
+            Any: API response data.
+
         Tags:
-            update, document, file-upload, async_job, management, boards:write, important
+            Embeds
         """
-        request_body = request_body
-        path = f"/v2/boards/{board_id}/documents/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/embeds/{item_id}"
+        query_params = {}
+        response = self._get(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def delete_embed_item(self, board_id, item_id) -> Any:
+        """
+        Deletes the specified embed item from the board by its ID and returns a success status upon removal.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Embeds
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/embeds/{item_id}"
+        query_params = {}
+        response = self._delete(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def update_embed_item(self, board_id, item_id, data=None, geometry=None, parent=None, position=None) -> Any:
+        """
+        Updates an embedded item within a specified board and returns the updated result.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "mode": "inline",
+                    "previewUrl": "https://miro.com/static/images/page/mr-index/localization/en/slider/ideation_brainstorming.png",
+                    "url": "https://www.youtube.com/watch?v=HlVSNEiFCBk"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Embeds
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        request_body = {
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/v2/boards/{board_id}/embeds/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_image_item_using_url(self, board_id, data=None, geometry=None, parent=None, position=None) -> Any:
         """
-        Creates an embed item to add external content to a Miro board. Requires boards:write scope and adheres to Level 2 rate limiting.
-        
+        Uploads an image to a specified board and returns success status upon completion.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing embed item data. Represents the external content's configuration.
-            geometry: Dictionary specifying dimensions (width/height) and optional transformations for the embed item.
-            parent: Dictionary identifying the parent element (e.g., frame) to which this embed item belongs. Optional.
-            position: Dictionary specifying placement coordinates (x/y) for the embed item on the board.
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "title": "Sample image title",
+                    "url": "https://miro.com/static/images/page/mr-index/localization/en/slider/ideation_brainstorming.png"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "rotation": 0,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created embed item's details and metadata from the API response.
-        
-        Raises:
-            HTTPError: Raised if the API request fails (4xx/5xx status codes). Includes error details from the response.
-        
+            Any: API response data.
+
         Tags:
-            create, embed, miro, api-integration, important
+            Images
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/embeds"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/images"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_image_item(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific embed item on a board.
-        
+        Retrieves a specific image item from a designated board using the provided identifiers.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            JSON data containing embed item information.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            embeds, read, important
+            Images
         """
-        path = f"/v2/boards/{board_id}/embeds/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/images/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_image_item(self, board_id, item_id) -> Any:
         """
-        Delete an embed item from a board.
-        
+        Deletes a specific image from a specified board.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            item_id: Unique identifier (ID) of the item that you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            JSON response containing deletion confirmation or data from the API.
-        
-        Raises:
-            requests.exceptions.HTTPError: If the API request fails due to client or server errors (4XX/5XX responses).
-        
+            Any: API response data.
+
         Tags:
-            delete, embeds, management, api, important
+            Images
         """
-        path = f"/v2/boards/{board_id}/embeds/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/images/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_embed_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_image_item_using_url(self, board_id, item_id, data=None, geometry=None, parent=None, position=None) -> Any:
         """
-        Updates an embed item on a Miro board with specified properties, including data, geometry, parent relationships, and positioning.
-        
+        Updates a specific image in a board using the PATCH method, applying partial modifications to the image's properties.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing data properties to update for the embed item (e.g., metadata, content).
-            geometry: Dictionary defining the embed item's dimensions and shape (e.g., height, width).
-            parent: Dictionary specifying parent item relationships or containment details.
-            position: Dictionary containing positioning information (e.g., x/y coordinates, rotation).
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "title": "Test image title",
+                    "url": "https://miro.com/static/images/page/mr-index/localization/en/slider/ideation_brainstorming.png"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "rotation": 0,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated embed item details from the Miro API response.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful API responses (4xx/5xx status codes) after calling self._patch().
-        
+            Any: API response data.
+
         Tags:
-            update, embed, board, management, api, patch, important
+            Images
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/embeds/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/images/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_image_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def get_items_on_board(self, board_id, limit=None, type=None, cursor=None) -> Any:
         """
-        Creates an image item on a Miro board using a URL, adding the image to the board with specified data and positioning.
-        
+        Retrieves a paginated list of items from a specified board using query parameters for limit, type, and cursor-based pagination.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing image data (e.g., URL and metadata)
-            geometry: Dictionary defining the image dimensions and geometric properties
-            parent: Dictionary specifying the parent item or container for the image
-            position: Dictionary detailing the image's placement coordinates on the board
-        
+            board_id (string): board_id
+            limit (string): Limits the number of items returned in the response when retrieving items from a board. Example: '10'.
+            type (string): Specifies the category or classification of items to retrieve from the board. Example: 'text'.
+            cursor (string): A token used to fetch the next page of items, typically a unique identifier from the last retrieved record.
+
         Returns:
-            Parsed JSON response containing the created image item details
-        
-        Raises:
-            HTTPError: Raised for unsuccessful API requests (e.g., invalid scope, rate limiting, or malformed data)
-        
+            Any: API response data.
+
         Tags:
-            images, create, miro-api, board-management, important
+            Items
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/items"
+        query_params = {k: v for k, v in [('limit', limit), ('type', type), ('cursor', cursor)] if v is not None}
+        response = self._get(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def get_specific_item_on_board(self, board_id, item_id) -> Any:
+        """
+        Retrieves details of a specific item from a board using the GET method and returns the data in response.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Items
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/items/{item_id}"
+        query_params = {}
+        response = self._get(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def delete_item(self, board_id, item_id) -> Any:
+        """
+        Deletes a specific item from a board by its ID and returns a success status.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Items
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/items/{item_id}"
+        query_params = {}
+        response = self._delete(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def update_item_position_or_parent(self, board_id, item_id, parent=None, position=None) -> Any:
+        """
+        Partially updates an existing item on a board using the PATCH method, allowing for specific modifications to resource properties.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Items
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'parent': parent,
+            'position': position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/images"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/items/{item_id}"
+        query_params = {}
+        response = self._patch(url, data=request_body, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def get_items_within_frame(self, board_id_PlatformContainers, parent_item_id=None, limit=None, type=None, cursor=None) -> Any:
+        """
+        Retrieves a paginated list of items from a specified board, filtered by parent item ID and type, using cursor-based pagination.
+
+        Args:
+            board_id_PlatformContainers (string): board_id_PlatformContainers
+            parent_item_id (string): (Required) ID of the frame for which you want to retrieve the list of available items.
+            limit (string): The "limit" parameter specifies the maximum number of items to return in a single response for the specified board. Example: '10'.
+            type (string): Specifies the type of items to retrieve within the board.
+            cursor (string): A token representing the position in the dataset for paginated results, used to fetch subsequent pages of items.
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Items
+        """
+        if board_id_PlatformContainers is None:
+            raise ValueError("Missing required parameter 'board_id_PlatformContainers'")
+        url = f"{self.base_url}/v2/boards/{board_id_PlatformContainers}/items"
+        query_params = {k: v for k, v in [('parent_item_id', parent_item_id), ('limit', limit), ('type', type), ('cursor', cursor)] if v is not None}
+        response = self._get(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def get_specific_item_on_board1(self, board_id, item_id) -> Any:
+        """
+        Retrieves a specific item from a board using the specified identifiers.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Flowchart shapes (experimental)
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/items/{item_id}"
+        query_params = {}
+        response = self._get(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def delete_item1(self, board_id, item_id) -> Any:
+        """
+        Deletes a specific item from a Miro board using the "DELETE" method.
+
+        Args:
+            board_id (string): board_id
+            item_id (string): item_id
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Items
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/items/{item_id}"
+        query_params = {}
+        response = self._delete(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def get_all_board_members(self, board_id, limit=None, offset=None) -> Any:
+        """
+        Retrieves a paginated list of board members using query parameters for limit and offset, returning a 200 status on success.
+
+        Args:
+            board_id (string): board_id
+            limit (string): Specifies the maximum number of member results to return in the response for the specified board.
+            offset (string): The "offset" parameter specifies the starting point in the dataset, excluding the first N items from the response, allowing users to fetch subsequent pages of data.
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Board Members
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/members"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset)] if v is not None}
+        response = self._get(url, params=query_params)
+        response.raise_for_status()
+        return response.json()
+
+    def share_board(self, board_id, emails=None, message=None, role=None) -> Any:
+        """
+        Adds a new member to a board using the API at path "/v2/boards/{board_id}/members" and returns a successful status message upon completion.
+
+        Args:
+            board_id (string): board_id
+            emails (array): emails Example: "['member@email.com']".
+            message (string): message Example: "Hey there! Join my board and let's collaborate on this project!".
+            role (string): role
+                Example:
+                ```json
+                {
+                  "emails": [
+                    "member@email.com"
+                  ],
+                  "message": "Hey there! Join my board and let's collaborate on this project!",
+                  "role": "commenter"
+                }
+                ```
+
+        Returns:
+            Any: API response data.
+
+        Tags:
+            Board Members
+        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        request_body = {
+            'emails': emails,
+            'message': message,
+            'role': role,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/v2/boards/{board_id}/members"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_image_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_specific_board_member(self, board_id, board_member_id) -> Any:
         """
-        Retrieves information for a specific image item on a board.
-        
+        Retrieves information about a specific board member using the "GET" method, providing details associated with the member identified by `{board_member_id}` within the board identified by `{board_id}`.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            board_member_id (string): board_member_id
+
         Returns:
-            JSON data containing image item information.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            images, read, board, fetch, important
+            Board Members
         """
-        path = f"/v2/boards/{board_id}/images/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if board_member_id is None:
+            raise ValueError("Missing required parameter 'board_member_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/members/{board_member_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_image_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def remove_board_member(self, board_id, board_member_id) -> Any:
         """
-        Deletes an image item from the board.
-        
+        Removes a user from a board using the Miro API and returns a successful response upon completion.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            board_member_id (string): board_member_id
+
         Returns:
-            JSON response from the server after deleting the image item.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, image-management, boards, important
+            Board Members
         """
-        path = f"/v2/boards/{board_id}/images/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if board_member_id is None:
+            raise ValueError("Missing required parameter 'board_member_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/members/{board_member_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_image_item_using_url(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_board_member(self, board_id, board_member_id, role=None) -> Any:
         """
-        Updates an image item on a Miro board using URL, modifying its data, geometry, parent, or position.
-        
+        Updates a board member's details for the specified board using the PATCH method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Optional dictionary containing image data. Must comply with Miro's API requirements for image items.
-            geometry: Optional dictionary specifying image dimensions (width/height) and optional transformations.
-            parent: Optional dictionary identifying the parent element where the image should be placed.
-            position: Optional dictionary containing coordinates (x/y) for image placement on the board.
-        
+            board_id (string): board_id
+            board_member_id (string): board_member_id
+            role (string): role
+                Example:
+                ```json
+                {
+                  "role": "commenter"
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated image item data from the Miro API response.
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP request failures, including invalid parameters (400), authentication errors (401), or resource not found (404).
-        
+            Any: API response data.
+
         Tags:
-            image, update, miro, async_job, important
+            Board Members
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if board_member_id is None:
+            raise ValueError("Missing required parameter 'board_member_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'role': role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/images/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/members/{board_member_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_image_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], request_body: Annotated[Any, ''] = None) -> Any:
+    def create_shape_item(self, board_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Creates an image item in a board by uploading a file from the device.
-        
+        Creates a new shape on a specified board using the provided data.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            request_body: Optional body of the request, annotated with any data type. Defaults to None.
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello",
+                    "shape": "rectangle"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "borderColor": "#1a1a1a",
+                    "borderOpacity": "0.0",
+                    "borderStyle": "normal",
+                    "borderWidth": "1.0",
+                    "color": "#1a1a1a",
+                    "fillColor": "#8fd14f",
+                    "fillOpacity": "1.0",
+                    "fontFamily": "arial",
+                    "fontSize": "12",
+                    "textAlign": "left",
+                    "textAlignVertical": "top"
+                  }
+                }
+                ```
+
         Returns:
-            The JSON response from the server after successfully creating the image item.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            image, upload, management, important
+            Shapes
         """
-        request_body = request_body
-        path = f"/v2/boards/{board_id}/images"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        request_body = {
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/v2/boards/{board_id}/shapes"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_image_item_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to update the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to update.'], request_body: Annotated[Any, ''] = None) -> Any:
+    def get_shape_item(self, board_id, item_id) -> Any:
         """
-        Updates an image item on a Miro board using a file from the user's device
-        
-        Args:
-            board_id: Unique identifier (ID) of the board where you want to update the item.
-            item_id: Unique identifier (ID) of the item that you want to update.
-            request_body: Payload containing image data and configuration (type and structure determined by Miro API specifications)
-        
-        Returns:
-            Parsed JSON representation of the updated image item from Miro API response
-        
-        Raises:
-            HTTPError: On unsuccessful API request status codes (4xx/5xx responses)
-        
-        Tags:
-            update, images, management, api-client, important
-        """
-        request_body = request_body
-        path = f"/v2/boards/{board_id}/images/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._patch(url, data=request_body, params=query_params)
-        response.raise_for_status()
-        return response.json()
+        Retrieves a specific shape from the specified board.
 
-    def get_items_on_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board for which you want to retrieve the list of available items.'], limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
-        """
-        Retrieves items from a specific board using cursor-based pagination.
-        
         Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: Optional cursor value for retrieving the next portion of results.
-            limit: Optional limit for the number of items to retrieve.
-            type: Optional type of items to filter by.
-        
-        Returns:
-            A JSON response containing the list of items on the board.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request.
-        
-        Tags:
-            retrieve, pagination, board, important
-        """
-        path = f"/v2/boards/{board_id}/items"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "type": type,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._get(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
+            board_id (string): board_id
+            item_id (string): item_id
 
-    def get_specific_item_on_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
-        """
-        Retrieves information for a specific item on a board.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
         Returns:
-            A JSON object containing information about the specific item.
-        
-        Raises:
-            requests.HTTPError: This exception is raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            item, board, read, important, management
+            Shapes
         """
-        path = f"/v2/boards/{board_id}/items/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/shapes/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_shape_item(self, board_id, item_id) -> Any:
         """
-        Deletes an item from a board, requiring specific permissions and adhering to rate limiting policies.
-        
+        Deletes a specified shape from a board using the provided board and item identifiers.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            item_id: Unique identifier (ID) of the item that you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            dict: Parsed JSON response containing deletion confirmation details
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid permissions, missing resources, or exceeding rate limits
-        
+            Any: API response data.
+
         Tags:
-            delete, items, async_job, management, important
+            Shapes
         """
-        path = f"/v2/boards/{board_id}/items/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/shapes/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_item_position_or_parent(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_shape_item(self, board_id, item_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Updates the position or the parent of an item on a board.
-        
+        Updates a specific shape on a board by its ID and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            parent: Optional parent dictionary to update the item's parent.
-            position: Optional position dictionary to update the item's position.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello",
+                    "shape": "rectangle"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "borderColor": "#1a1a1a",
+                    "borderOpacity": "0.0",
+                    "borderStyle": "normal",
+                    "borderWidth": "1.0",
+                    "color": "#1a1a1a",
+                    "fillColor": "#8fd14f",
+                    "fillOpacity": "1.0",
+                    "fontFamily": "arial",
+                    "fontSize": "12",
+                    "textAlign": "left",
+                    "textAlignVertical": "top"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response from the server containing the updated item details.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails due to invalid status code.
-        
+            Any: API response data.
+
         Tags:
-            update, management, board, item, important
+            Shapes
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "parent": parent,
-            "position": position,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/items/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/shapes/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_within_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board that contains the frame for which you want to retrieve the list of available items.'], parent_item_id: Annotated[Any, '(Required) ID of the frame for which you want to retrieve the list of available items.'] = None, limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
+    def create_sticky_note_item(self, board_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Retrieves a list of items within a specific frame using a cursor-based approach.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: Cursor to retrieve the next portion of the results, if applicable.
-            limit: Maximum number of items to return in the response.
-            parent_item_id: Required ID of the frame from which to retrieve items.
-            type: Type of items to retrieve.
-        
-        Returns:
-            A JSON response containing items within the frame and potentially a cursor for pagination.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request to retrieve items fails.
-        
-        Tags:
-            fetch, pagination, items, important
-        """
-        path = f"/v2/boards/{board_id}/items" # Corrected path variable name from schema parameter
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "parent_item_id": parent_item_id,
-                "limit": limit,
-                "type": type,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._get(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
+        Creates a new sticky note on a specific board using the "POST" method and returns a successful status message when the operation is completed.
 
-    def get_specific_item_on_board1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a specific item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to retrieve.']) -> Any:
-        """
-        Retrieves information for a specific item on a board from the Miro API, requiring read access to board data.
-        
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
-        Returns:
-            Any: Parsed JSON response containing the board item's details.
-        
-        Raises:
-            HTTPError: When the API request fails due to authentication issues, invalid parameters, or server errors (raised by response.raise_for_status()).
-        
-        Tags:
-            retrieve, board-item, miro-api, async_job, important
-        """
-        path = f"/v2-experimental/boards/{board_id}/items/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._get(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello",
+                    "shape": "square"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "fillColor": "gray",
+                    "textAlign": "left",
+                    "textAlignVertical": "top"
+                  }
+                }
+                ```
 
-    def delete_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to retrieve a specific item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to retrieve.']) -> Any:
-        """
-        Deletes an item from the board.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
         Returns:
-            A JSON response from the server after deleting the item.
-        
-        Raises:
-            requests.RequestException: Raised if there is an error with the request, such as network issues.
-        
-        Tags:
-            delete, item_management, board, important
-        """
-        path = f"/v2-experimental/boards/{board_id}/items/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._delete(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
+            Any: API response data.
 
-    def get_all_board_members(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board to which the board member belongs.'], limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
-        """
-        Retrieves a pageable list of all members for a board with optional pagination using limit and offset parameters.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            limit: Optional limit on the number of members returned.
-            offset: Optional offset for pagination, determining where the list begins.
-        
-        Returns:
-            A JSON response containing the list of board members.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails, such as exceeding rate limits or unauthorized access.
-        
         Tags:
-            list, pagination, board, members, important
+            Sticky Notes
         """
-        path = f"/v2/boards/{board_id}/members"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._get(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
-
-    def share_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board to which the board member belongs.'], emails: Annotated[list[Any], ''] = None, message: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
-        """
-        Shares a board and invites new members by sending an invitation email based on provided parameters.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            emails: A list of email addresses for the users to whom the board will be shared.
-            message: An optional message to include in the invitation email.
-            role: The role assigned to the invited users.
-        
-        Returns:
-            A JSON response containing the result of the sharing operation.
-        
-        Raises:
-            requests.HTTPError: Raised if there is a problem with the HTTP request, such as unauthorized access or a rate limit exceeded.
-        
-        Tags:
-            share, invite, management, important
-        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "emails": emails,
-            "message": message,
-            "role": role,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/members"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/sticky_notes"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_board_member(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], board_member_id: Annotated[str, '(Required) Unique identifier (ID) of the board member whose role you want to delete.']) -> Any:
+    def get_sticky_note_item(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific board member.
-        
+        Retrieves a specific sticky note from a board using the provided board and item IDs.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            board_member_id: Unique identifier (ID) of the board member.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            A JSON response containing details about the board member.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request to retrieve the board member information fails, often due to an invalid response status.
-        
+            Any: API response data.
+
         Tags:
-            read, board-members, important
+            Sticky Notes
         """
-        path = f"/v2/boards/{board_id}/members/{board_member_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/sticky_notes/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def remove_board_member(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], board_member_id: Annotated[str, '(Required) Unique identifier (ID) of the board member whose role you want to delete.']) -> Any:
+    def delete_sticky_note_item(self, board_id, item_id) -> Any:
         """
-        Removes a board member from a board.
-        
+        Deletes a specific sticky note from a board using the DELETE method, returning a successful status message.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            board_member_id: Unique identifier (ID) of the board member whose role you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            The JSON response from the API after removing the board member.
-        
-        Raises:
-            requests.HTTPError: If the HTTP request fails, such as encountering an unexpected status code.
-        
+            Any: API response data.
+
         Tags:
-            remove, board-members, management, important
+            Sticky Notes
         """
-        path = f"/v2/boards/{board_id}/members/{board_member_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/sticky_notes/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_board_member(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete an item.'], board_member_id: Annotated[str, '(Required) Unique identifier (ID) of the board member whose role you want to delete.'],role: Annotated[str, '(Required) New role to assign to the board member. Required scope: boards:write.']) -> Any:
+    def update_sticky_note_item(self, board_id, item_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Updates the role of a specific board member by submitting a PATCH request with the new role.
-        
+        Updates a sticky note on the specified board using partial modifications and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            board_member_id: Unique identifier (ID) of the board member.
-            role: New role to assign to the board member. Required scope: boards:write.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello",
+                    "shape": "square"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "fillColor": "gray",
+                    "textAlign": "left",
+                    "textAlignVertical": "top"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response from the API containing updated board member data.
-        
-        Raises:
-            requests.HTTPError: Raised if the API request fails (e.g., invalid role, insufficient permissions, or rate limiting).
-        
+            Any: API response data.
+
         Tags:
-            update, board-members, management, api, patch, important
+            Sticky Notes
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "role": role,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/members/{board_member_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/sticky_notes/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_text_item(self, board_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Creates a shape item on a board with specified properties and optional components.
-        
+        Creates a new text entry on a specified board and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Additional data associated with the shape (e.g., custom metadata).
-            geometry: Geometric properties of the shape (e.g., dimensions, type).
-            parent: Parent element or container for the shape (e.g., group, frame).
-            position: Positioning information (e.g., x/y coordinates, rotation).
-            style: Styling attributes (e.g., color, border thickness, fill).
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello"
+                  },
+                  "geometry": {
+                    "rotation": 0,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "color": "#1a1a1a",
+                    "fillColor": "#e6e6e6",
+                    "fillOpacity": "1.0",
+                    "fontFamily": "arial",
+                    "fontSize": "12",
+                    "textAlign": "left"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response containing details of the created shape item.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid parameters, authentication issues, or server errors.
-        
+            Any: API response data.
+
         Tags:
-            shapes, board-management, api, create, important
+            Texts
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/shapes"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/texts"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_text_item(self, board_id, item_id) -> Any:
         """
-        Retrieve information for a specific shape item on a board.
-        
+        Retrieves a specific text item from a board using the provided board and item identifiers.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            A JSON object containing the shape item's information.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, board, item, shape, management, important
+            Texts
         """
-        path = f"/v2/boards/{board_id}/shapes/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/texts/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_text_item(self, board_id, item_id) -> Any:
         """
-        Deletes a shape item from the board. Requires Miro API authorization with 'boards:write' scope and adheres to Level 3 rate limiting.
-        
+        Deletes a specific text item from a board using the provided board and item identifiers.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            item_id: Unique identifier (ID) of the item that you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            Dict[str, Any]: Parsed JSON response containing API operation results.
-        
-        Raises:
-            RequestException: If the HTTP request fails due to connection errors or invalid parameters.
-            HTTPError: If the API responds with a status code indicating failure (e.g., 404 for invalid resource or 403 for insufficient permissions).
-        
+            Any: API response data.
+
         Tags:
-            delete, shapes, board, management, api, important
+            Texts
         """
-        path = f"/v2/boards/{board_id}/shapes/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/texts/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_shape_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_text_item(self, board_id, item_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Updates a shape item on a board based on the provided data, geometry, parent, position, and style.
-        
+        Updates a specific text item on a board using the PATCH method, allowing partial modifications of the item's properties.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing the data for the shape item.
-            geometry: Dictionary defining the geometry of the shape item.
-            parent: Dictionary specifying the parent of the shape item.
-            position: Dictionary with the position details of the shape item.
-            style: Dictionary containing the styling properties for the shape item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello"
+                  },
+                  "geometry": {
+                    "rotation": 0,
+                    "width": 100
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "color": "#1a1a1a",
+                    "fillColor": "#e6e6e6",
+                    "fillOpacity": "1.0",
+                    "fontFamily": "arial",
+                    "fontSize": "12",
+                    "textAlign": "left"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response from the update operation.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails.
-        
+            Any: API response data.
+
         Tags:
-            update, shape, management, important
+            Texts
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/shapes/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/texts/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_items_in_bulk(self, board_id, items=None) -> Any:
         """
-        Creates a sticky note item on a Miro board with specified properties.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing sticky note content/metadata. See Miro API documentation for required fields.
-            geometry: Dictionary defining dimensions (e.g., width/height) of the sticky note.
-            parent: Dictionary identifying parent element when nesting sticky notes.
-            position: Dictionary specifying x/y coordinates for sticky note placement.
-            style: Dictionary containing styling attributes (e.g., color, text formatting).
-        
-        Returns:
-            Dictionary containing created sticky note details from Miro API response
-        
-        Raises:
-            HTTPError: Raised for API request failures (4XX/5XX status codes)
-        
-        Tags:
-            create, sticky-notes, api-integration, board-management, important
-        """
-        request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
-        }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/sticky_notes"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
-        response.raise_for_status()
-        return response.json()
+        Bulk updates or creates items on a specified board using the API endpoint "/v2/boards/{board_id}/items/bulk" via the POST method.
 
-    def get_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
-        """
-        Retrieves information for a specific sticky note item on a Miro board.
-        
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
-        Returns:
-            Any: Parsed JSON response containing the sticky note item data.
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP request failures, such as invalid board access or API rate limits exceeded.
-        
-        Tags:
-            sticky-note, retrieve, api-call, boards-read, management, important
-        """
-        path = f"/v2/boards/{board_id}/sticky_notes/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._get(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
+            board_id (string): board_id
 
-    def delete_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
-        """
-        Deletes a sticky note item from the board.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
         Returns:
-            The JSON response from the server after deletion.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
-        Tags:
-            delete, sticky_notes, important
-        """
-        path = f"/v2/boards/{board_id}/sticky_notes/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._delete(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
+            Any: API response data.
 
-    def update_sticky_note_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
-        """
-        Updates a sticky note item on a board based on the provided data and style properties.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing data properties for the sticky note item.
-            geometry: Dictionary specifying the geometry of the sticky note item.
-            parent: Dictionary identifying the parent of the sticky note item.
-            position: Dictionary containing position information for the sticky note item.
-            style: Dictionary specifying styling options for the sticky note item.
-        
-        Returns:
-            JSON response from the API after updating the sticky note item.
-        
-        Raises:
-            requests.exceptions.HTTPError: If the HTTP request returns an unsuccessful status code.
-        
         Tags:
-            update, sticky-notes, board-management, important
+            Bulk operations
         """
-        request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
-        }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/sticky_notes/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._patch(url, data=request_body, params=query_params)
-        response.raise_for_status()
-        return response.json()
-
-    def create_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
-        """
-        Creates a text item on a board by sending a POST request with the specified parameters.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing data for the text item.
-            geometry: Dictionary specifying the geometry of the text item.
-            parent: Dictionary identifying the parent of the text item.
-            position: Dictionary detailing the position of the text item.
-            style: Dictionary that defines the style of the text item.
-        
-        Returns:
-            JSON response from the server after creating the text item.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request is unsuccessful due to rate limiting or invalid request.
-        
-        Tags:
-            create, text, board, write, important
-        """
-        request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
-        }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/texts"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
-        response.raise_for_status()
-        return response.json()
-
-    def get_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
-        """
-        Retrieves information for a specific text item on a Miro board, requiring boards:read scope and subject to rate limiting.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
-        Returns:
-            dict: A dictionary containing the text item data from the Miro API response.
-        
-        Raises:
-            HTTPError: Raised for unsuccessful HTTP responses (4XX/5XX status codes).
-        
-        Tags:
-            text, retrieve, miro-api, boards-read, rate-limited, important
-        """
-        path = f"/v2/boards/{board_id}/texts/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._get(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
-
-    def delete_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
-        """
-        Deletes a text item from a board, requiring specific permissions and adhering to rate limiting rules.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the item.
-            item_id: Unique identifier (ID) of the item that you want to delete.
-        
-        Returns:
-            Response data from the API call parsed as JSON.
-        
-        Raises:
-            HTTPError: If the request fails due to rate limiting, insufficient permissions, or invalid parameters.
-        
-        Tags:
-            delete, text-management, board-api, async_job, important
-        """
-        path = f"/v2/boards/{board_id}/texts/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._delete(url, params=query_params)
-        response.raise_for_status()
-        return response.json()
-
-    def update_text_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
-        """
-        Updates a text item on a board based on the provided data and style properties.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing data properties for the text item.
-            geometry: Dictionary containing geometry properties for the text item.
-            parent: Dictionary specifying the parent of the text item.
-            position: Dictionary containing position properties for the text item.
-            style: Dictionary defining style properties for the text item.
-        
-        Returns:
-            JSON response from the API request.
-        
-        Raises:
-            RequestException: Raised if there is a problem with the HTTP request.
-        
-        Tags:
-            update, text, important, management
-        """
-        request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
-        }
-        request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/texts/{item_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._patch(url, data=request_body, params=query_params)
-        response.raise_for_status()
-        return response.json()
-
-    def create_items_in_bulk(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], items: Annotated[list[Any], ''] = None) -> Any:
-        """
-        Creates items in bulk by adding up to 20 items of the same or different types to a board in a single transactional operation
-        
-        Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            items: A list of items of any type, which can include shapes, cards, or sticky notes. Defaults to None if no items are provided
-        
-        Returns:
-            The JSON response from the successful creation operation
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails, such as a non-200 status code
-        
-        Tags:
-            bulk, transactional, create, important, management
-        """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        # Use items array directly as request body
         request_body = items
-        path = f"/v2/boards/{board_id}/items/bulk"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/items/bulk"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_items_in_bulk_using_file_from_device(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], request_body: Annotated[Any, ''] = None) -> Any:
+    def create_frame(self, board_id, data=None, geometry=None, position=None, style=None) -> Any:
         """
-        Create items in bulk using a file from a device. This function adds different types of items to a board, supporting up to 20 items per call. The operation is transactional; if any item fails to create, none will be created.
-        
-        Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            request_body: The JSON body containing the bulk data for the items to be created. Optional.
-        
-        Returns:
-            JSON response from the bulk creation operation.
-        
-        Raises:
-            requests.HTTPError: Raises an HTTP error if the request status code indicates a failure.
-        
-        Tags:
-            create, bulk, api, file, important
-        """
-        request_body = request_body
-        path = f"/v2/boards/{board_id}/items/bulk" # Corrected path variable name from schema parameter
-        url = f"{self.base_url}{path}"
-        query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
-        response.raise_for_status()
-        return response.json()
+        Creates a new frame in the specified board using the API and returns a successful response.
 
-    def create_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create a frame.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
-        """
-        Creates a new frame on a board by sending the provided data, geometry, position, and style.
-        
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create a frame.
-            data: Optional dictionary containing data for the frame.
-            geometry: Optional dictionary specifying the geometry of the frame.
-            position: Optional dictionary defining the position of the frame.
-            style: Optional dictionary describing the style of the frame.
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "format": "custom",
+                    "showContent": true,
+                    "title": "Sample frame title",
+                    "type": "freeform"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "width": 100
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "fillColor": "#ffffffff"
+                  }
+                }
+                ```
+
         Returns:
-            The JSON response from the server after creating the frame.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            frame, create, board, important, management
+            Frames
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/frames"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/frames"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the frame.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the frame that you want to delete.']) -> Any:
+    def get_frame(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific frame on a Miro board.
-        
+        Retrieves the details of a specific frame within a board using the "GET" method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            Any: Parsed JSON response containing frame data and metadata.
-        
-        Raises:
-            HTTPError: Raised for failed API requests (4XX/5XX status codes), typically due to invalid permissions, missing frames, or network issues.
-        
+            Any: API response data.
+
         Tags:
-            frames, retrieve, api, boards:read, management, important
+            Frames
         """
-        path = f"/v2/boards/{board_id}/frames/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/frames/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the frame.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the frame that you want to delete.']) -> Any:
+    def delete_frame(self, board_id, item_id) -> Any:
         """
-        Delete a frame from a Miro board. Requires boards:write scope and adheres to Rate Limit Level 3.
-        
+        Deletes a frame with the specified item ID from a board with the given board ID.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the frame.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            dict: Response payload from the Miro API after successful deletion.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for HTTP request failures, including invalid permissions (403), non-existent frame (404), or rate limiting (429).
-        
+            Any: API response data.
+
         Tags:
-            delete, frame, management, async_job, boards, miro, important
+            Frames
         """
-        path = f"/v2/boards/{board_id}/frames/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/frames/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_frame(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the frame.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the frame that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_frame(self, board_id, item_id, data=None, geometry=None, position=None, style=None) -> Any:
         """
-        Updates a frame on a board using the provided data, style, geometry, or position properties.
-        
+        Updates specific frame properties for a board using partial modifications and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the frame.
-            data: A dictionary containing data properties to update the frame.
-            geometry: A dictionary containing geometry properties to update the frame.
-            position: A dictionary containing position properties to update the frame.
-            style: A dictionary containing style properties to update the frame.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "format": "custom",
+                    "showContent": true,
+                    "title": "Sample frame title",
+                    "type": "freeform"
+                  },
+                  "geometry": {
+                    "height": 100,
+                    "width": 100
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "fillColor": "#ffffffff"
+                  }
+                }
+                ```
+
         Returns:
-            JSON response from the server after updating the frame.
-        
-        Raises:
-            HTTPError: Raised if the server returns an HTTP error (e.g., unauthorized access).
-        
+            Any: API response data.
+
         Tags:
-            update, frames, important, management
+            Frames
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/frames/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/frames/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_app_metrics(self, app_id: Annotated[str, '(Required) ID of the app to get metrics for.'], startDate: Annotated[Any, '(Required) Start date of the period in UTC format. For example, 2024-12-31.'] = None, endDate: Annotated[Any, '(Required) End date of the period in UTC format. For example, 2024-12-31.'] = None, period: Annotated[Any, 'Group data by this time period.'] = None) -> Any:
+    def get_app_metrics(self, app_id, startDate=None, endDate=None, period=None) -> Any:
         """
-        Fetches app metrics for a specified time range and groups data by given period.
-        
+        Retrieves application metrics for a specified time period using the `startDate`, `endDate`, and `period` query parameters.
+
         Args:
-            app_id: ID of the app to get metrics for.
-            endDate: (Required) End date of the period in UTC format (e.g., 2024-12-31).
-            period: Time period to group data by (e.g., day, week).
-            startDate: (Required) Start date of the period in UTC format (e.g., 2024-12-31).
-        
+            app_id (string): app_id
+            startDate (string): (Required) Start date of the period in UTC format. For example, 2024-12-31. Example: '1978-06-11'.
+            endDate (string): (Required) End date of the period in UTC format. For example, 2024-12-31. Example: '1978-06-11'.
+            period (string): Group data by this time period. Example: 'WEEK'.
+
         Returns:
-            List of usage metrics for the app grouped by the specified time period.
-        
-        Raises:
-            requests.HTTPError: Raised if the API request fails (e.g., invalid parameters, authentication failure, or rate limiting).
-        
+            Any: API response data.
+
         Tags:
-            app-metrics, data-fetch, usage-analytics, important, management
+            App metrics (experimental)
         """
-        path = f"/v2-experimental/apps/{app_id}/metrics"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "startDate": startDate,
-                "endDate": endDate,
-                "period": period,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if app_id is None:
+            raise ValueError("Missing required parameter 'app_id'")
+        url = f"{self.base_url}/v2-experimental/apps/{app_id}/metrics"
+        query_params = {k: v for k, v in [('startDate', startDate), ('endDate', endDate), ('period', period)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_total_app_metrics(self, app_id: Annotated[str, '(Required) ID of the app to get total metrics for.']) -> Any:
+    def get_total_app_metrics(self, app_id) -> Any:
         """
-        Get total usage metrics for a specific app since its creation.
-        
+        Retrieves total metrics for a specified application by its ID.
+
         Args:
-            app_id: ID of the app to get total metrics for.
-        
+            app_id (string): app_id
+
         Returns:
-            A JSON object containing total app usage metrics.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the API request or response handling.
-        
+            Any: API response data.
+
         Tags:
-            metrics, reporting, app-management, important
+            App metrics (experimental)
         """
-        path = f"/v2-experimental/apps/{app_id}/metrics-total"
-        url = f"{self.base_url}{path}"
+        if app_id is None:
+            raise ValueError("Missing required parameter 'app_id'")
+        url = f"{self.base_url}/v2-experimental/apps/{app_id}/metrics-total"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_webhook_subscription(self, boardId: Annotated[Any, ''] = None, callbackUrl: Annotated[Any, ''] = None, status: Annotated[Any, ''] = None) -> Any:
+    def create_webhook_subscription(self, boardId=None, callbackUrl=None, status=None) -> Any:
         """
-        Creates a webhook subscription to receive item-update notifications for a specified Miro board.
-        
+        Creates a board subscription webhook and returns a success status upon configuration.
+
         Args:
-            boardId: ID of the board to monitor for item updates
-            callbackUrl: URL endpoint that will receive notifications
-            status: Current status of the webhook subscription (active by default when created)
-        
+            boardId (string): boardId Example: 'o9J_kzlUDmo='.
+            callbackUrl (string): callbackUrl Example: 'https://yourwebhooklistener.com/v2/webhooks_endpoint'.
+            status (string): status
+                Example:
+                ```json
+                {
+                  "boardId": "o9J_kzlUDmo=",
+                  "callbackUrl": "https://yourwebhooklistener.com/v2/webhooks_endpoint",
+                  "status": "enabled"
+                }
+                ```
+
         Returns:
-            Dictionary containing the created subscription details from the API response
-        
-        Raises:
-            requests.HTTPError: If the API request fails with non-2xx status code
-        
+            Any: API response data.
+
         Tags:
-            webhooks, subscriptions, api-integration, notifications, management, important
+            Webhooks (experimental)
         """
         request_body = {
-            "boardId": boardId,
-            "callbackUrl": callbackUrl,
-            "status": status,
+            'boardId': boardId,
+            'callbackUrl': callbackUrl,
+            'status': status,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = "/v2-experimental/webhooks/board_subscriptions"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2-experimental/webhooks/board_subscriptions"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_webhook_subscription(self, subscription_id: Annotated[str, '(Required) '], callbackUrl: Annotated[Any, ''] = None, status: Annotated[Any, ''] = None) -> Any:
+    def update_webhook_subscription(self, subscription_id, callbackUrl=None, status=None) -> Any:
         """
-        Updates the status or callback URL of an existing webhook subscription.
-        
+        Updates a webhook subscription for a board using the GitHub API and returns a success status.
+
         Args:
-            subscription_id: ID of the subscription to update.
-            callbackUrl: New URL for receiving webhook events. None preserves existing value.
-            status: Updated status for the subscription (e.g., 'enabled', 'disabled'). None preserves existing value.
-        
+            subscription_id (string): subscription_id
+            callbackUrl (string): callbackUrl Example: 'https://yourwebhooklistener.com/v2/webhooks_endpoint'.
+            status (string): status
+                Example:
+                ```json
+                {
+                  "callbackUrl": "https://yourwebhooklistener.com/v2/webhooks_endpoint",
+                  "status": "enabled"
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated webhook subscription details.
-        
-        Raises:
-            HTTPError: Raised for API request failures, including invalid parameters or authorization issues.
-        
+            Any: API response data.
+
         Tags:
-            webhook, update, subscription, management, api, important
+            Webhooks (experimental)
         """
+        if subscription_id is None:
+            raise ValueError("Missing required parameter 'subscription_id'")
         request_body = {
-            "callbackUrl": callbackUrl,
-            "status": status,
+            'callbackUrl': callbackUrl,
+            'status': status,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2-experimental/webhooks/board_subscriptions/{subscription_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2-experimental/webhooks/board_subscriptions/{subscription_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_webhook_subscriptions(self, limit: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
+    def get_webhook_subscriptions(self, limit=None, cursor=None) -> Any:
         """
-        Retrieves information about webhook subscriptions for a user.
-        
+        Retrieves a paginated list of webhook subscriptions using cursor-based pagination.
+
         Args:
-            cursor: Optional cursor to specify where to start retrieving subscriptions
-            limit: Optional limit on the number of subscriptions to return
-        
+            limit (string): The number of webhook subscriptions to return in the response. Example: '10'.
+            cursor (string): A unique identifier used in cursor-based pagination to specify the starting point for retrieving the next set of webhook subscription records.
+
         Returns:
-            A JSON object containing information about the webhook subscriptions.
-        
-        Raises:
-            HTTPError: Raised when the HTTP request to retrieve subscriptions fails.
-        
+            Any: API response data.
+
         Tags:
-            webhooks, list, important
+            Webhooks (experimental)
         """
-        path = "/v2-experimental/webhooks/subscriptions"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        url = f"{self.base_url}/v2-experimental/webhooks/subscriptions"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_webhook_subscription(self, subscription_id: Annotated[str, '(Required) Unique identifier (ID) of the subscription that you want to delete']) -> Any:
+    def get_specific_webhook_subscription(self, subscription_id) -> Any:
         """
-        Retrieves information for a specific webhook subscription from the Miro API.
-        
+        Retrieves details about a specific webhook subscription identified by the provided subscription ID using the GET method.
+
         Args:
-            subscription_id: Unique identifier (ID) of the subscription.
-        
+            subscription_id (string): subscription_id
+
         Returns:
-            dict: Parsed JSON response containing the webhook subscription details.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for HTTP 4XX/5XX errors from the API request.
-        
+            Any: API response data.
+
         Tags:
-            webhooks, experimental, retrieve, api-call, important
+            Webhooks (experimental)
         """
-        path = f"/v2-experimental/webhooks/subscriptions/{subscription_id}"
-        url = f"{self.base_url}{path}"
+        if subscription_id is None:
+            raise ValueError("Missing required parameter 'subscription_id'")
+        url = f"{self.base_url}/v2-experimental/webhooks/subscriptions/{subscription_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_webhook_subscription(self, subscription_id: Annotated[str, '(Required) Unique identifier (ID) of the subscription that you want to delete']) -> Any:
+    def delete_webhook_subscription(self, subscription_id) -> Any:
         """
-        Deletes the specified webhook subscription. Requires appropriate permissions and adherence to rate limiting.
-        
+        Deletes a webhook subscription by a specified `subscription_id`, stopping the delivery of notifications associated with that subscription.
+
         Args:
-            subscription_id: Unique identifier (ID) of the subscription.
-        
+            subscription_id (string): subscription_id
+
         Returns:
-            dict: Parsed JSON response containing the deletion confirmation or related data
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request fails (4XX/5XX status codes), typically due to invalid permissions, nonexistent subscription, or API rate limits being exceeded
-        
+            Any: API response data.
+
         Tags:
-            delete, webhook, subscription, api, management, important
+            Webhooks (experimental)
         """
-        path = f"/v2-experimental/webhooks/subscriptions/{subscription_id}"
-        url = f"{self.base_url}{path}"
+        if subscription_id is None:
+            raise ValueError("Missing required parameter 'subscription_id'")
+        url = f"{self.base_url}/v2-experimental/webhooks/subscriptions/{subscription_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_specific_mind_map_node(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the mind map node.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the mind map node that you want to delete.']) -> Any:
+    def get_specific_mind_map_node(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific mind map node on a Miro board, requiring boards:read scope.
-        
+        Retrieves a specific mind map node by ID from a specified board using the GET method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the mind map node.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            JSON-formatted response containing the mind map node's data.
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails, typically due to invalid board access, missing nodes, or server errors.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, mind-map-node, experimental, boards:read, api-call, important
+            Mind map nodes (experimental)
         """
-        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_mind_map_node(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the mind map node.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the mind map node that you want to delete.']) -> Any:
+    def delete_mind_map_node(self, board_id, item_id) -> Any:
         """
-        Deletes a mind map node item and its child nodes from the board.
-        
+        Deletes a specified mindmap node from a board using the experimental v2 API.
+
         Args:
-            board_id: Unique identifier (ID) of the board from which you want to delete the mind map node.
-            item_id: Unique identifier (ID) of the mind map node that you want to delete.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            The JSON response from the server after deletion.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, mind-map-node, experimental, important
+            Mind map nodes (experimental)
         """
-        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_mind_map_nodes(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], limit: Annotated[Any, 'Maximum number of results returned'] = None, cursor: Annotated[Any, 'Points to the next portion of the results set'] = None) -> Any:
+    def get_mind_map_nodes(self, board_id, limit=None, cursor=None) -> Any:
         """
-        Retrieve mind map nodes using cursor-based pagination for a specific board.
-        
+        Retrieves a paginated list of mindmap nodes from a specified Miro board, supporting limit and cursor parameters for result pagination.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: Points to the next portion of the results set for pagination. Subsequent calls should use the cursor value from the previous response to retrieve the next batch.
-            limit: Maximum number of results to return in a single batch.
-        
+            board_id (string): board_id
+            limit (string): Maximum number of results returned
+            cursor (string): Points to the next portion of the results set
+
         Returns:
-            JSON response containing the list of mind map nodes and pagination cursor.
-        
-        Raises:
-            requests.HTTPError: Raised for invalid requests, such as authentication failures or rate limit breaches, based on the API response status.
-        
+            Any: API response data.
+
         Tags:
-            mind-map, pagination, cursor-based, retrieve, async_job, boards:read, important
+            Mind map nodes (experimental)
         """
-        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/mindmap_nodes"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_mind_map_node(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_mind_map_node(self, board_id, data=None, geometry=None, parent=None, position=None) -> Any:
         """
-        Create a mind map node, adding it to a board as either a root node or a child node under another node.
-        
+        Creates a new mind map node in a specified Miro board using the POST method and returns a response upon successful creation.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Optional data associated with the node, provided as a dictionary.
-            geometry: Optional geometry data for the node, provided as a dictionary.
-            parent: Optional parent node, provided as a dictionary, indicating the node this node will be a child of.
-            position: Optional position parameters for the node, provided as a dictionary with x and y coordinates.
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+                Example:
+                ```json
+                {
+                  "data": {
+                    "nodeView": {
+                      "data": {
+                        "value": "<Error: Too many levels of nesting to fake this schema>"
+                      }
+                    }
+                  },
+                  "geometry": {
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  }
+                }
+                ```
+
         Returns:
-            The JSON response from the API call after creating the node.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request to create the node fails.
-        
+            Any: API response data.
+
         Tags:
-            create, mind-map, node-management, important
+            Mind map nodes (experimental)
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2-experimental/boards/{board_id}/mindmap_nodes"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/mindmap_nodes"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_on_board1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board for which you want to retrieve the list of available items.'], limit: Annotated[Any, ''] = None, type: Annotated[Any, ''] = None, cursor: Annotated[Any, ''] = None) -> Any:
+    def get_items_on_board1(self, board_id, limit=None, type=None, cursor=None) -> Any:
         """
-        Retrieve paginated items from a specific board using cursor-based pagination, with optional filtering by item type.
-        
+        Retrieves a paginated list of items from a specified board, filtered by type and limited by cursor-based pagination.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: Cursor for pagination. Set to the cursor value from the previous response to retrieve the next page of results.
-            limit: Maximum number of items to return per request.
-            type: Filter items by specific type (if provided).
-        
+            board_id (string): board_id
+            limit (string): Specifies the maximum number of items to return in a single response for the list of items on the specified board. Example: '10'.
+            type (string): Specifies the type of items to retrieve from the board, such as "card", "task", or other supported item types. Example: 'shape'.
+            cursor (string): Specifies a unique identifier or token used for cursor-based pagination to retrieve the next or previous page of items from the specified board.
+
         Returns:
-            JSON response containing the paginated list of items from the board.
-        
-        Raises:
-            HTTPError: Raised when the HTTP request fails, typically due to authentication errors, invalid parameters, or rate limiting.
-        
+            Any: API response data.
+
         Tags:
-            list, paginated, cursor, filter, board-items, important
+            Flowchart shapes (experimental)
         """
-        path = f"/v2-experimental/boards/{board_id}/items"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "type": type,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/items"
+        query_params = {k: v for k, v in [('limit', limit), ('type', type), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to create the item.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_shape_item1(self, board_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Creates a flowchart shape item on a Miro board using the provided parameters.
-        
+        Creates a new shape on a board with the specified `board_id` using the API.
+
         Args:
-            board_id: Unique identifier (ID) of the board where you want to create the item.
-            data: Dictionary containing shape item data. See Miro API documentation for structure.
-            geometry: Dictionary specifying geometric properties of the shape (e.g., dimensions).
-            parent: Dictionary referencing a parent element for hierarchical structures.
-            position: Dictionary specifying x/y coordinates for shape placement.
-            style: Dictionary containing styling parameters (colors, borders, etc).
-        
+            board_id (string): board_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello",
+                    "shape": "rectangle"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "borderColor": "#1a1a1a",
+                    "borderOpacity": "0.0",
+                    "borderStyle": "normal",
+                    "borderWidth": "1.0",
+                    "color": "#1a1a1a",
+                    "fillColor": "#8fd14f",
+                    "fillOpacity": "1.0",
+                    "fontFamily": "arial",
+                    "fontSize": "12",
+                    "textAlign": "left",
+                    "textAlignVertical": "top"
+                  }
+                }
+                ```
+
         Returns:
-            Dictionary containing the created shape item's data from the Miro API response.
-        
-        Raises:
-            HTTPError: When the Miro API request fails (4xx/5xx status codes).
-        
+            Any: API response data.
+
         Tags:
-            create, flowchart, shapes, boards:write, important
+            Flowchart shapes (experimental)
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2-experimental/boards/{board_id}/shapes"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/shapes"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def get_shape_item1(self, board_id, item_id) -> Any:
         """
-        Retrieves information for a specific shape item on a board.
-        
+        Retrieves shape details from a specific item within a board, identified by the board ID and item ID.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            A JSON response containing information about the shape item.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, board-item, important
+            Flowchart shapes (experimental)
         """
-        path = f"/v2-experimental/boards/{board_id}/shapes/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/shapes/{item_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.']) -> Any:
+    def delete_shape_item1(self, board_id, item_id) -> Any:
         """
-        Deletes a flowchart shape item from the board.
-        
+        Deletes a specific shape from the specified board.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            The JSON response from the delete operation.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request returned an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, flowchart, shape, item, management, important
+            Flowchart shapes (experimental)
         """
-        path = f"/v2-experimental/boards/{board_id}/shapes/{item_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/shapes/{item_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_shape_item1(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board from which you want to delete the item.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to delete.'], data: Annotated[dict[str, Any], ''] = None, geometry: Annotated[dict[str, Any], ''] = None, parent: Annotated[dict[str, Any], ''] = None, position: Annotated[dict[str, Any], ''] = None, style: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_shape_item1(self, board_id, item_id, data=None, geometry=None, parent=None, position=None, style=None) -> Any:
         """
-        Updates a flowchart shape item on a board based on the provided data and style properties.
-        
+        Updates a specific shape on a board and returns a status message.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            data: Dictionary containing data properties for the shape item.
-            geometry: Dictionary containing geometric properties for the shape item.
-            parent: Dictionary specifying the parent of the shape item.
-            position: Dictionary defining the position of the shape item.
-            style: Dictionary setting the visual style of the shape item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+            data (object): data
+            geometry (object): geometry
+            parent (object): parent
+            position (object): position
+            style (object): style
+                Example:
+                ```json
+                {
+                  "data": {
+                    "content": "Hello",
+                    "shape": "rectangle"
+                  },
+                  "geometry": {
+                    "height": 60,
+                    "rotation": 0,
+                    "width": 320
+                  },
+                  "parent": {
+                    "id": "null"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "style": {
+                    "borderColor": "#1a1a1a",
+                    "borderOpacity": "0.0",
+                    "borderStyle": "normal",
+                    "borderWidth": "1.0",
+                    "color": "#1a1a1a",
+                    "fillColor": "#8fd14f",
+                    "fillOpacity": "1.0",
+                    "fontFamily": "arial",
+                    "fontSize": "12",
+                    "textAlign": "left",
+                    "textAlignVertical": "top"
+                  }
+                }
+                ```
+
         Returns:
-            The JSON response from the server after updating the shape item.
-        
-        Raises:
-            requests.RequestException: Raised if there is an issue with the HTTP request.
-        
+            Any: API response data.
+
         Tags:
-            update, flowchart-shapes, management, important
+            Flowchart shapes (experimental)
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
         request_body = {
-            "data": data,
-            "geometry": geometry,
-            "parent": parent,
-            "position": position,
-            "style": style,
+            'data': data,
+            'geometry': geometry,
+            'parent': parent,
+            'position': position,
+            'style': style,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2-experimental/boards/{board_id}/shapes/{item_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2-experimental/boards/{board_id}/shapes/{item_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_all_groups_on_aboard(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], limit: Annotated[Any, 'The maximum number of items to return at one time, default is 10, maximum is 50.'] = None, cursor: Annotated[Any, ''] = None) -> Any:
+    def get_all_groups_on_aboard(self, board_id, limit=None, cursor=None) -> Any:
         """
-        Retrieves all groups on a board, using a cursor-based pagination approach.
-        
+        Retrieves a list of groups associated with a specified board, allowing for pagination with optional limit and cursor parameters.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: A cursor to fetch the next portion of results; defaults to None.
-            limit: The maximum number of items to return at one time; defaults to 10, with a maximum of 50.
-        
+            board_id (string): board_id
+            limit (string): The maximum number of items to return at one time, default is 10, maximum is 50. Example: '10'.
+            cursor (string): A string token that determines the starting position for paginated results, allowing sequential retrieval of data chunks in subsequent requests.
+
         Returns:
-            A JSON response containing groups and their items, along with a cursor for pagination.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request encounters an error, such as a non-200 status code.
-        
+            Any: API response data.
+
         Tags:
-            fetch, groups, cursor-pagination, important, management
+            Groups
         """
-        path = f"/v2/boards/{board_id}/groups"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/groups"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_group(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], data: Annotated[dict[str, Any], ''] = None) -> Any:
+    def create_group(self, board_id, data=None) -> Any:
         """
-        Creates a group of items on a Miro board using the provided data dictionary.
-        
+        Creates a new group in the specified board using the provided board ID and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            data: Dictionary containing item data to create a group (None results in empty group creation with default parameters)
-        
+            board_id (string): board_id
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "items": [
+                      "3458764517517852417",
+                      "3458764517517852418"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            JSON response containing the created group details from Miro API
-        
-        Raises:
-            HTTPError: When the API request fails due to invalid input, insufficient permissions, or server issues
-        
+            Any: API response data.
+
         Tags:
-            create, group, management, boards, write, async-job, important
+            Groups
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "data": data,
+            'data': data,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/groups"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/groups"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_of_agroup_by_id(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_item_id: Annotated[Any, '(Required) The ID of the group item to retrieve.'] = None, limit: Annotated[Any, 'The maximum number of items to return at one time, default is 10, maximum is 50.'] = None, cursor: Annotated[Any, ''] = None) -> Any:
+    def get_items_of_agroup_by_id(self, board_id, limit=None, cursor=None, group_item_id=None) -> Any:
         """
-        Retrieves items of a group by ID using a cursor-based approach.
-        
+        Retrieves a paginated list of group items for a specific board, optionally filtered by group item ID, with cursor-based pagination support.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            cursor: Cursor value for pagination. If None, returns the first set of results.
-            group_item_id: The ID of the group item to retrieve. This parameter is required.
-            limit: The maximum number of items to return at one time (default is 10, maximum is 50).
-        
+            board_id (string): board_id
+            limit (string): The maximum number of items to return at one time, default is 10, maximum is 50. Example: '10'.
+            cursor (string): A token used to paginate through results, where each request returns the next set of items after the specified cursor position.
+            group_item_id (string): (Required) The ID of the group item to retrieve.
+
         Returns:
-            A JSON response containing a list of items that are part of the specified group.
-        
-        Raises:
-            requests.HTTPError: Raised if there was an HTTP error during the request.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, group, cursor-based, async_job, management, important
+            Groups
         """
-        path = f"/v2/boards/{board_id}/groups/items"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-                "group_item_id": group_item_id,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/groups/items"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor), ('group_item_id', group_item_id)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_agroup_by_its_id(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.']) -> Any:
+    def get_agroup_by_its_id(self, board_id, group_id) -> Any:
         """
-        Returns a list of items in a specific group.
-        
+        Retrieves a group associated with a specific board from the API.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            group_id: Unique identifier (ID) of the group.
-        
+            board_id (string): board_id
+            group_id (string): group_id
+
         Returns:
-            The JSON response containing the list of items in the group.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails.
-        
+            Any: API response data.
+
         Tags:
-            get, group, items, board, important
+            Groups
         """
-        path = f"/v2/boards/{board_id}/groups/{group_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if group_id is None:
+            raise ValueError("Missing required parameter 'group_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/groups/{group_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def updates_agroup_with_new_items(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.'], data: Annotated[dict[str, Any], ''] = None) -> Any:
+    def updates_agroup_with_new_items(self, board_id, group_id, data=None) -> Any:
         """
-        Updates an existing group entirely by replacing it with new data and assigns a new group ID.
-        
+        Updates a group on a specific board using the provided group ID and board ID.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            group_id: Unique identifier (ID) of the group.
-            data: A dictionary containing the new data to replace the group. It is optional and defaults to None.
-        
+            board_id (string): board_id
+            group_id (string): group_id
+            data (object): data
+                Example:
+                ```json
+                {
+                  "data": {
+                    "items": [
+                      "3458764517517852417",
+                      "3458764517517852418"
+                    ]
+                  }
+                }
+                ```
+
         Returns:
-            The JSON response from the server after updating the group.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returned an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            update, group, management, important
+            Groups
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if group_id is None:
+            raise ValueError("Missing required parameter 'group_id'")
         request_body = {
-            "data": data,
+            'data': data,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/groups/{group_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/groups/{group_id}"
         query_params = {}
         response = self._put(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def ungroup_items(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.'], delete_items: Annotated[Any, 'Indicates whether the items should be removed. By default, false.'] = None) -> Any:
+    def ungroup_items(self, board_id, group_id, delete_items=None) -> Any:
         """
-        Ungroups items from a group, optionally deleting them.
-        
+        Deletes a group from a specified board using the DELETE method, optionally allowing for the deletion of associated items.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            group_id: Unique identifier (ID) of the group.
-            delete_items: Indicates whether the items should be removed; defaults to None, meaning no deletion by default.
-        
+            board_id (string): board_id
+            group_id (string): group_id
+            delete_items (string): Indicates whether the items should be removed. By default, false. Example: 'true'.
+
         Returns:
-            A JSON response from the server.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if there is an HTTP error in the request, such as rate limiting or unauthorized access.
-        
+            Any: API response data.
+
         Tags:
-            ungroup, delete, groups, important
+            Groups
         """
-        path = f"/v2/boards/{board_id}/groups/{group_id}"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "delete_items": delete_items,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if group_id is None:
+            raise ValueError("Missing required parameter 'group_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/groups/{group_id}"
+        query_params = {k: v for k, v in [('delete_items', delete_items)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def deletes_the_group(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board.'], group_id: Annotated[str, '(Required) Unique identifier (ID) of the group.'], delete_items: Annotated[Any, '(Required) Indicates whether the items should be removed. Set to `true` to delete items in the group.'] = None) -> Any:
+    def deletes_the_group(self, board_id, delete_items=None) -> Any:
         """
-        Deletes a group from the board, optionally removing items within it.
-        
+        Deletes a group from a specified board, with an option to delete associated items, and returns a success status.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            group_id: Unique identifier (ID) of the group.
-            delete_items: Indicates whether the items should be removed. Set to `true` to delete items in the group.
-        
+            board_id (string): board_id
+             (string): No description provided. Example: 'null'.
+            delete_items (string): (Required) Indicates whether the items should be removed. Set to `true` to delete items in the group. Example: 'true'.
+
         Returns:
-            Response from deleting the group, represented as JSON.
-        
-        Raises:
-            requests.HTTPError: Raised when an HTTP error occurs, such as an invalid response status.
-        
+            Any: API response data.
+
         Tags:
-            delete, group-management, important
+            Groups
         """
-        path = f"/v2/boards/{board_id}/groups/{group_id}" # Corrected path segment from <string> to {group_id}
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "delete_items": delete_items,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/groups/<string>"
+        query_params = {k: v for k, v in [('delete_items', delete_items)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def revoke_token_v2(self, accessToken: Annotated[Any, ''] = None, clientId: Annotated[Any, ''] = None, clientSecret: Annotated[Any, ''] = None) -> Any:
+    def revoke_token_v2(self, accessToken=None, clientId=None, clientSecret=None) -> Any:
         """
-        Revoke an access token and its associated refresh token, invalidating them immediately and preventing further use. This action does not uninstall the application for the user.
-        
+        Revokes an OAuth 2.0 access or refresh token at the authorization server's revocation endpoint and returns a successful status upon invalidation.
+
         Args:
-            accessToken: Access token to revoke (required for token invalidation)
-            clientId: Client ID associated with the OAuth application (required for authentication)
-            clientSecret: Client secret associated with the OAuth application (required for authentication)
-        
+            accessToken (string): accessToken Example: '<Add your access token here>'.
+            clientId (string): clientId Example: '<value>'.
+            clientSecret (string): clientSecret
+                Example:
+                ```json
+                {
+                  "accessToken": "<Add your access token here>",
+                  "clientId": "<value>",
+                  "clientSecret": "<value>"
+                }
+                ```
+
         Returns:
-            Parsed JSON response from the revocation endpoint
-        
-        Raises:
-            requests.HTTPError: Raised for non-2xx status codes from the API server, indicating authentication failures, invalid parameters, or server errors
-        
+            Any: API response data.
+
         Tags:
-            oauth, authentication, token-management, revoke, api, v2, important
+            OAuth
         """
         request_body = {
-            "accessToken": accessToken,
-            "clientId": clientId,
-            "clientSecret": clientSecret,
+            'accessToken': accessToken,
+            'clientId': clientId,
+            'clientSecret': clientSecret,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = "/v2/oauth/revoke"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/oauth/revoke"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_tags_from_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board with the item whose tags you want to retrieve.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item whose tags you want to retrieve.']) -> Any:
+    def get_tags_from_item(self, board_id, item_id) -> Any:
         """
-        Retrieves all tags associated with the specified item by making a GET request to the Miro API endpoint.
-        
+        Retrieves tags associated with a specific item on a board using the API.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-        
+            board_id (string): board_id
+            item_id (string): item_id
+
         Returns:
-            A parsed JSON response containing tags associated with the item, typically as a list or dictionary structure.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the HTTP request fails due to invalid credentials, missing permissions (boards:read scope required), or invalid resource identifiers.
-        
+            Any: API response data.
+
         Tags:
-            get, retrieve, tags, api, management, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/items/{item_id}/tags"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/items/{item_id}/tags"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_tags_from_board(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board whose tags you want to retrieve.'], limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
+    def get_tags_from_board(self, board_id, limit=None, offset=None) -> Any:
         """
-        Retrieves tags from a specified board using pagination parameters.
-        
+        Retrieves a list of tags associated with a specific board, allowing for pagination control via limit and offset parameters.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            limit: Maximum number of tags to return (used for pagination).
-            offset: Number of tags to skip before returning results (used for pagination).
-        
+            board_id (string): board_id
+            limit (string): Specifies the maximum number of tags to return in the response for the given board.
+            offset (string): Specifies the starting position in the collection of tags, indicating the number of items to skip before returning results.
+
         Returns:
-            JSON response containing retrieved tags.
-        
-        Raises:
-            HTTPError: If the API request fails due to client/server errors (4xx/5xx).
-        
+            Any: API response data.
+
         Tags:
-            retrieve, list, board, tags, pagination, rest-api, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/tags"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/tags"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board whose tags you want to retrieve.'], fillColor: Annotated[Any, ''] = None, title: Annotated[Any, ''] = None) -> Any:
+    def create_tag(self, board_id, fillColor=None, title=None) -> Any:
         """
-        Creates a tag on a board with specified visual attributes, requiring API write access.
-        
+        Creates and adds new tags to a specific board using the provided board ID.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            fillColor: (Any, optional): Hex code or color name for the tag's background fill.
-            title: (Any, optional): Display text for the tag.
-        
+            board_id (string): board_id
+            fillColor (string): fillColor Example: 'red'.
+            title (string): title
+                Example:
+                ```json
+                {
+                  "fillColor": "red",
+                  "title": "to do"
+                }
+                ```
+
         Returns:
-            Any: Parsed JSON response containing the created tag's metadata.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid permissions, invalid parameters, rate limits, or server errors.
-        
+            Any: API response data.
+
         Tags:
-            management, board-tag, create, async-job, important
+            Tags
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
         request_body = {
-            "fillColor": fillColor,
-            "title": title,
+            'fillColor': fillColor,
+            'title': title,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/tags"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/tags"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to delete a specific tag.'], tag_id: Annotated[str, '(Required) Unique identifier (ID) of the tag that you want to delete.']) -> Any:
+    def get_tag(self, board_id, tag_id) -> Any:
         """
-        Retrieves information for a specific tag from the Miro API, requiring the 'boards:write' scope.
-        
+        Retrieves information about a specific tag associated with a board, identified by the board ID and tag ID, using the GET method.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            tag_id: Unique identifier (ID) of the tag.
-        
+            board_id (string): board_id
+            tag_id (string): tag_id
+
         Returns:
-            Any: Parsed JSON response containing tag information from the Miro API
-        
-        Raises:
-            HTTPError: If the API request fails due to authentication, invalid parameters, or server errors (forwarded from response.raise_for_status())
-        
+            Any: API response data.
+
         Tags:
-            retrieve, tag, boards-write, api-client, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/tags/{tag_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if tag_id is None:
+            raise ValueError("Missing required parameter 'tag_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/tags/{tag_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to delete a specific tag.'], tag_id: Annotated[str, '(Required) Unique identifier (ID) of the tag that you want to delete.']) -> Any:
+    def delete_tag(self, board_id, tag_id) -> Any:
         """
-        Deletes a specified tag from the board, removing it from all cards and sticky notes.
-        
+        Deletes a tag from a specific board using the API and returns a successful status message.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            tag_id: Unique identifier (ID) of the tag.
-        
+            board_id (string): board_id
+            tag_id (string): tag_id
+
         Returns:
-            The response from the delete operation as JSON.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request encounters any error.
-        
+            Any: API response data.
+
         Tags:
-            delete, tag, management, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/tags/{tag_id}"
-        url = f"{self.base_url}{path}"
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if tag_id is None:
+            raise ValueError("Missing required parameter 'tag_id'")
+        url = f"{self.base_url}/v2/boards/{board_id}/tags/{tag_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to delete a specific tag.'], tag_id: Annotated[str, '(Required) Unique identifier (ID) of the tag that you want to delete.'], fillColor: Annotated[Any, ''] = None, title: Annotated[Any, ''] = None) -> Any:
+    def update_tag(self, board_id, tag_id, fillColor=None, title=None) -> Any:
         """
-        Updates a tag's properties (fill color and title) on a Miro board. Changes made via API are not reflected in real-time until the board is refreshed.
-        
+        Updates a tag associated with a specific board by modifying its details using the specified `board_id` and `tag_id`.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            tag_id: Unique identifier (ID) of the tag.
-            fillColor: New fill color for the tag (optional)
-            title: New title/text for the tag (optional)
-        
+            board_id (string): board_id
+            tag_id (string): tag_id
+            fillColor (string): fillColor Example: 'red'.
+            title (string): title
+                Example:
+                ```json
+                {
+                  "fillColor": "red",
+                  "title": "done"
+                }
+                ```
+
         Returns:
-            JSON response containing updated tag data from the Miro API
-        
-        Raises:
-            requests.HTTPError: Raised for unsuccessful API responses (4xx/5xx status codes)
-        
+            Any: API response data.
+
         Tags:
-            update, tag, board, management, important
+            Tags
         """
+        if board_id is None:
+            raise ValueError("Missing required parameter 'board_id'")
+        if tag_id is None:
+            raise ValueError("Missing required parameter 'tag_id'")
         request_body = {
-            "fillColor": fillColor,
-            "title": title,
+            'fillColor': fillColor,
+            'title': title,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/boards/{board_id}/tags/{tag_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/boards/{board_id}/tags/{tag_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_items_by_tag(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board where you want to retrieve a specific tag.'], tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag that you want to retrieve.'] = None, limit: Annotated[Any, ''] = None, offset: Annotated[Any, ''] = None) -> Any:
+    def get_items_by_tag(self, board_id_PlatformTags, limit=None, offset=None, tag_id=None) -> Any:
         """
-        Retrieves items associated with a specified tag from a Miro board.
-        
+        Retrieves paginated items from a specific board's platform tags, optionally filtered by tag ID.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            limit: Maximum number of items to retrieve (None returns all available items).
-            offset: Starting position for paginated results.
-            tag_id: Unique identifier (ID) of the tag to filter items (required).
-        
+            board_id_PlatformTags (string): board_id_PlatformTags
+            limit (string): The `limit` query parameter specifies the maximum number of items to return in a single response page.
+            offset (string): Specifies the starting position in the results to retrieve, excluding the first N items.
+            tag_id (string): (Required) Unique identifier (ID) of the tag that you want to retrieve. Example: '{{tag_id}}'.
+
         Returns:
-            JSON response containing the retrieved items matching the specified tag.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid scope, rate limiting, or invalid tag ID.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, tag, items, pagination, api, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/items" # Corrected path variable name from schema parameter
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "offset": offset,
-                "tag_id": tag_id,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id_PlatformTags is None:
+            raise ValueError("Missing required parameter 'board_id_PlatformTags'")
+        url = f"{self.base_url}/v2/boards/{board_id_PlatformTags}/items"
+        query_params = {k: v for k, v in [('limit', limit), ('offset', offset), ('tag_id', tag_id)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def attach_tag_to_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board with the item that you want to remove a tag from.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to remove the tag from.'], tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag you want to add to the item.'] = None) -> Any:
+    def attach_tag_to_item(self, board_id_PlatformTags, item_id, tag_id=None) -> Any:
         """
-        Attaches an existing tag to a specified Miro board item (card or sticky note). Supports up to 8 tags per item.
-        
+        Adds an item to a board with specific platform tags using the POST method, optionally specifying a tag ID in the query parameters.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            tag_id: (Required) Unique identifier (ID) of the tag to attach to the item. Must be valid Miro tag ID.
-        
+            board_id_PlatformTags (string): board_id_PlatformTags
+            item_id (string): item_id
+            tag_id (string): (Required) Unique identifier (ID) of the tag you want to add to the item. Example: '{{tag_id}}'.
+
         Returns:
-            JSON response containing the API operation result. Format depends on Miro's API implementation.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised for invalid tag IDs, non-existent items, rate limits (Level 1), or missing 'boards:write' scope permissions.
-        
+            Any: API response data.
+
         Tags:
-            tag-attachment, board-management, async_job, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/items/{item_id}/tags" # Corrected path variable name from schema parameter
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "tag_id": tag_id,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
-        response = self._post(url, params=query_params)
+        if board_id_PlatformTags is None:
+            raise ValueError("Missing required parameter 'board_id_PlatformTags'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id_PlatformTags}/items/{item_id}"
+        query_params = {k: v for k, v in [('tag_id', tag_id)] if v is not None}
+        response = self._post(url, data={}, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def remove_tag_from_item(self, board_id: Annotated[str, '(Required) Unique identifier (ID) of the board with the item that you want to remove a tag from.'], item_id: Annotated[str, '(Required) Unique identifier (ID) of the item that you want to remove the tag from.'], tag_id: Annotated[Any, '(Required) Unique identifier (ID) of the tag that you want to remove from the item.'] = None) -> Any:
+    def remove_tag_from_item(self, board_id_PlatformTags, item_id, tag_id=None) -> Any:
         """
-        Removes a specific tag from an item without deleting the tag itself.
-        
+        Deletes a specific item from a board's PlatformTags collection, requiring a tag_id parameter for identification.
+
         Args:
-            board_id: Unique identifier (ID) of the board.
-            item_id: Unique identifier (ID) of the item.
-            tag_id: Unique identifier (ID) of the tag to be removed from the item.
-        
+            board_id_PlatformTags (string): board_id_PlatformTags
+            item_id (string): item_id
+            tag_id (string): (Required) Unique identifier (ID) of the tag that you want to remove from the item. Example: '{{tag_id}}'.
+
         Returns:
-            The response of the deletion operation in JSON format.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            remove, tag, management, important
+            Tags
         """
-        path = f"/v2/boards/{board_id}/items/{item_id}/tags" # Corrected path variable name from schema parameter
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "tag_id": tag_id,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if board_id_PlatformTags is None:
+            raise ValueError("Missing required parameter 'board_id_PlatformTags'")
+        if item_id is None:
+            raise ValueError("Missing required parameter 'item_id'")
+        url = f"{self.base_url}/v2/boards/{board_id_PlatformTags}/items/{item_id}"
+        query_params = {k: v for k, v in [('tag_id', tag_id)] if v is not None}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def list_of_projects(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to retrieve the list of available projects.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to retrieve the list of available projects.'], limit: Annotated[Any, 'The maximum number of results to return per call. If the number of projects in the response is greater than the limit specified, the response returns the cursor parameter with a value.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None) -> Any:
+    def list_of_projects(self, org_id, team_id, limit=None, cursor=None) -> Any:
         """
-        Retrieves a list of projects in an organization, including private projects with Content Admin permissions.
-        
+        Retrieves a list of projects for a specified team within an organization, allowing pagination via limit and cursor parameters.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            cursor: An indicator of the position of a page in the full set of results. To obtain the first page, leave it empty. To obtain subsequent pages, set it to the value returned in the cursor field of the previous request.
-            limit: The maximum number of results to return per call.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            limit (string): The maximum number of results to return per call. If the number of projects in the response is greater than the limit specified, the response returns the cursor parameter with a value. Example: '100'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: '3074457345618265000'.
+
         Returns:
-            A JSON response containing the list of projects.
-        
-        Raises:
-            HTTPError: Raised if an HTTP request error occurs, such as a bad response status code.
-        
+            Any: API response data.
+
         Tags:
-            list, projects, management, important
+            Projects
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to retrieve the list of available projects.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to retrieve the list of available projects.'], name: Annotated[Any, ''] = None) -> Any:
+    def create_project(self, org_id, team_id, name=None) -> Any:
         """
-        Creates a new project in an existing team as an organizational container for boards, enabling shared access management.
-        
+        Assigns a project to a team within an organization using a POST request and returns a success status upon completion.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            name: Name of the project (required). Projects act as folders for organizing boards with controlled access.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            name (string): name
+                Example:
+                ```json
+                {
+                  "name": "My project"
+                }
+                ```
+
         Returns:
-            Dictionary containing created project details from API response
-        
-        Raises:
-            HTTPError: If the API request fails (e.g., invalid authentication, insufficient permissions, or missing required scope 'projects:write')
-        
+            Any: API response data.
+
         Tags:
-            projects, create, management, board-organization, async_job, enterprise, important
+            Projects
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
         request_body = {
-            "name": name,
+            'name': name,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to delete a project.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to delete a project.'], project_id: Annotated[str, '(Required) The ID of the project that you want to delete.']) -> Any:
+    def get_project(self, org_id, team_id, project_id) -> Any:
         """
-        Retrieves project information, such as the name of an existing project.
-        
+        Retrieves project details for a specific team within an organization.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+
         Returns:
-            The project information in JSON format.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request encounters an error, such as a bad status code.
-        
+            Any: API response data.
+
         Tags:
-            management, project, enterprise, important, read
+            Projects
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to delete a project.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to delete a project.'], project_id: Annotated[str, '(Required) The ID of the project that you want to delete.']) -> Any:
+    def delete_project(self, org_id, team_id, project_id) -> Any:
         """
-        Deletes a project, retaining associated boards and users within the team.
-        
+        Deletes a specific organization's team project and returns a success message upon removal.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+
         Returns:
-            The JSON response from the server after deleting the project.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            delete, project, management, important
+            Projects
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_project(self, org_id: Annotated[str, '(Required) The ID of the organization from which you want to delete a project.'], team_id: Annotated[str, '(Required) The ID of the team from which you want to delete a project.'], project_id: Annotated[str, '(Required) The ID of the project that you want to delete.'], name: Annotated[Any, ''] = None) -> Any:
+    def update_project(self, org_id, team_id, project_id, name=None) -> Any:
         """
-        Updates project information, including the project name.
-        
+        Updates project details within the specified team and organization using the PATCH method and returns a successful response upon completion.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            name: Project name to update (optional). Required scope: projects:write. Enterprise plan and Company Admin role required.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            name (string): name
+                Example:
+                ```json
+                {
+                  "name": "My project"
+                }
+                ```
+
         Returns:
-            JSON response containing updated project details.
-        
-        Raises:
-            requests.HTTPError: Raised for failed API requests (4xx/5xx status codes).
-            PermissionError: Implicitly raised if lacking Enterprise plan access or Company Admin privileges.
-        
+            Any: API response data.
+
         Tags:
-            update, project, management, enterprise, async_job, important
+            Projects
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
         request_body = {
-            "name": name,
+            'name': name,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_project_settings(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project whose settings you want to update.']) -> Any:
+    def get_project_settings(self, org_id, team_id, project_id) -> Any:
         """
-        Retrieves project settings from the Miro API. This endpoint requires specific permissions and is restricted to Enterprise plan users with Company Admin role.
-        
+        Retrieves the settings for a specified organization's team project.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+
         Returns:
-            dict: A dictionary containing the project settings fetched from the Miro API
-        
-        Raises:
-            requests.HTTPError: Raised when the API request fails, typically due to authentication issues or invalid permissions
-        
+            Any: API response data.
+
         Tags:
-            project-settings, management, enterprise, api-call, important
+            Project Settings
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_project_settings(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project whose settings you want to update.'], sharingPolicySettings: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_project_settings(self, org_id, team_id, project_id, sharingPolicySettings=None) -> Any:
         """
-        Updates the settings of a project, specifically modifying the sharing policy settings.
-        
+        Updates organization, team, and project settings for the specified project.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            sharingPolicySettings: Optional dictionary containing settings for sharing policies; defaults to None if not provided.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            sharingPolicySettings (object): sharingPolicySettings
+                Example:
+                ```json
+                {
+                  "sharingPolicySettings": {
+                    "teamAccess": "private"
+                  }
+                }
+                ```
+
         Returns:
-            A JSON response from the server after updating project settings.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails or returns an error status code.
-        
+            Any: API response data.
+
         Tags:
-            update, project, settings, management, enterprise, important
+            Project Settings
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
         request_body = {
-            "sharingPolicySettings": sharingPolicySettings,
+            'sharingPolicySettings': sharingPolicySettings,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def list_of_project_members(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project for which you want to retrieve the list of members.'], limit: Annotated[Any, 'The maximum number of results to return per call. If the number of project members in the response is greater than the limit specified, the response returns the cursor parameter with a value.'] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None) -> Any:
+    def list_of_project_members(self, org_id, team_id, project_id, limit=None, cursor=None) -> Any:
         """
-        Retrieves a paginated list of members for a specific project, supporting cursor-based pagination.
-        
+        Retrieves a list of members in a specific project within a team for an organization using the provided limit and cursor query parameters.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            cursor: An indicator of the position of a page in the full set of results. Leave empty to fetch the first page, or use the value from the previous response's 'cursor' field for subsequent pages.
-            limit: The maximum number of results per request. If the response contains more members than this limit, the 'cursor' parameter is included in the response.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            limit (string): The maximum number of results to return per call. If the number of project members in the response is greater than the limit specified, the response returns the cursor parameter with a value. Example: '100'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: '3074457345618265000'.
+
         Returns:
-            A JSON response containing the list of project members and pagination metadata, including a cursor for subsequent requests when applicable.
-        
-        Raises:
-            HTTPError: Raised when the API request fails, typically due to authentication errors, invalid parameters, or rate limiting.
-        
+            Any: API response data.
+
         Tags:
-            list, project-members, pagination, async-job, important, management
+            Project Members
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def add_member_in_aproject(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project for which you want to retrieve the list of members.'], email: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
+    def add_member_in_aproject(self, org_id, team_id, project_id, email=None, role=None) -> Any:
         """
-        Adds a member to a project by sending a request with the member's email and role.
-        
+        Adds a member to a specified project within a team and organization.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            email: Email of the user to be added to the project
-            role: Role of the user in the project
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            email (string): email Example: 'someone@domain.com'.
+            role (string): role
+                Example:
+                ```json
+                {
+                  "email": "someone@domain.com",
+                  "role": "viewer"
+                }
+                ```
+
         Returns:
-            JSON response from the API indicating the result of the operation
-        
-        Raises:
-            HTTPError: Raised if the HTTP request fails, such as due to invalid credentials or rate limiting.
-        
+            Any: API response data.
+
         Tags:
-            add, project-members, management, important
+            Project Members
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
         request_body = {
-            "email": email,
-            "role": role,
+            'email': email,
+            'role': role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_project_member(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project from which you want to remove a member.'], member_id: Annotated[str, '(Required) The ID of the member that you want to remove from a project.']) -> Any:
+    def get_project_member(self, org_id, team_id, project_id, member_id) -> Any:
         """
-        Retrieves information for a specific project member from Miro. Requires Company Admin role and Enterprise plan access.
-        
+        Retrieves a specific member's details from a project team within an organization.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            member_id: The ID of the member.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            member_id (string): member_id
+
         Returns:
-            dict: A JSON response containing the project member's details.
-        
-        Raises:
-            HTTPError: Raised when the API request fails, typically due to insufficient permissions, invalid authentication (status 401/403), rate limiting, or API errors (status 400/404/500).
-        
+            Any: API response data.
+
         Tags:
-            get, project-members, enterprise, important, async_job
+            Project Members
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def remove_project_member(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project from which you want to remove a member.'], member_id: Annotated[str, '(Required) The ID of the member that you want to remove from a project.']) -> Any:
+    def remove_project_member(self, org_id, team_id, project_id, member_id) -> Any:
         """
-        Remove a project member from a project without removing them from the team.
-        
+        Deletes a member from a specific project within a team in an organization using the provided member ID.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            member_id: The ID of the member.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            member_id (string): member_id
+
         Returns:
-            The response from the server after removing the project member.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised when the HTTP request returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            remove, project, management, important
+            Project Members
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_project_member(self, org_id: Annotated[str, '(Required) The ID of the organization to which the project belongs.'], team_id: Annotated[str, '(Required) The ID of the team to which the project belongs.'], project_id: Annotated[str, '(Required) The ID of the project from which you want to remove a member.'], member_id: Annotated[str, '(Required) The ID of the member that you want to remove from a project.'], role: Annotated[Any, ''] = None) -> Any:
+    def update_project_member(self, org_id, team_id, project_id, member_id, role=None) -> Any:
         """
-        Updates the role of a project member.
-        
+        Updates team member information in an organization project using the "PATCH" method and returns a successful status response.
+
         Args:
-            org_id: The ID of the organization.
-            team_id: The ID of the team.
-            project_id: The ID of the project.
-            member_id: The ID of the member.
-            role: New role to assign to the project member.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            project_id (string): project_id
+            member_id (string): member_id
+            role (string): role
+                Example:
+                ```json
+                {
+                  "role": "viewer"
+                }
+                ```
+
         Returns:
-            Dictionary containing the updated project member details (if available) from the server response.
-        
-        Raises:
-            HTTPError: If the API request fails due to server errors (4XX/5XX) or invalid permissions.
-        
+            Any: API response data.
+
         Tags:
-            update, project-members, role-management, enterprise, api, important
+            Project Members
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if project_id is None:
+            raise ValueError("Missing required parameter 'project_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
         request_body = {
-            "role": role,
+            'role': role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def list_teams(self, org_id: Annotated[str, '(Required) The id of the Organization.'], limit: Annotated[Any, ''] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, name: Annotated[Any, 'Name query. Filters teams by name using case insensitive partial match. A value "dev" will return both "Developer\'s team" and "Team for developers".'] = None) -> Any:
+    def list_teams(self, org_id, limit=None, cursor=None, name=None) -> Any:
         """
-        Retrieves a paginated list of teams in an organization, filtered by name if provided.
-        
+        Retrieves a paginated list of teams for a specified organization with optional filtering by name.
+
         Args:
-            org_id: The id of the Organization.
-            cursor: An indicator of pagination position. Leave empty for the first page, or use the value from the previous response's cursor field for subsequent pages.
-            limit: Maximum number of teams to retrieve (exact behavior depends on API implementation details).
-            name: Case-insensitive partial match filter for team names (e.g., 'dev' matches 'Developer\'s team' and 'Developers').
-        
+            org_id (string): org_id
+            limit (string): Specifies the maximum number of teams to return in a single response. Example: '100'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: '3055557345821140500'.
+            name (string): Name query. Filters teams by name using case insensitive partial match. A value "dev" will return both "Developer's team" and "Team for developers". Example: 'My team'.
+
         Returns:
-            API response JSON containing teams data and pagination information.
-        
-        Raises:
-            HTTPError: When the API request fails due to network issues, invalid parameters, or insufficient permissions.
-        
+            Any: API response data.
+
         Tags:
-            list-teams, pagination, filter, enterprise, management, teams, important
+            Teams
         """
-        path = f"/v2/orgs/{org_id}/teams"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-                "name": name,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor), ('name', name)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def create_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], name: Annotated[Any, ''] = None) -> Any:
+    def create_team(self, org_id, name=None) -> Any:
         """
-        Creates a new team in an existing organization with the specified name.
-        
+        Creates a new team within the specified organization using the POST method.
+
         Args:
-            org_id: The id of the Organization.
-            name: (Annotated[Any, '']) The name of the team to create. Must be a non-empty string if required by API constraints, although the type annotation currently allows any value.
-        
+            org_id (string): org_id
+            name (string): name
+                Example:
+                ```json
+                {
+                  "name": "My Team"
+                }
+                ```
+
         Returns:
-            dict: A dictionary containing the newly created team's data as returned by the Miro API.
-        
-        Raises:
-            HTTPError: If the API request fails (e.g., invalid credentials, rate limiting, or insufficient permissions). Raised by response.raise_for_status().
-        
+            Any: API response data.
+
         Tags:
-            teams, create, management, api, enterprise, important
+            Teams
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
         request_body = {
-            "name": name,
+            'name': name,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
+    def get_team(self, org_id, team_id) -> Any:
         """
-        Retrieves team information for an existing team, available for Enterprise plan users.
-        
+        Retrieves team details for the specified organization and team ID.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+
         Returns:
-            JSON response containing team information.
-        
-        Raises:
-            HTTPError: Raised if the HTTP request encounters an unexpected status code.
-        
+            Any: API response data.
+
         Tags:
-            teams, enterprise, management, read, important
+            Teams
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
+    def delete_team(self, org_id, team_id) -> Any:
         """
-        Delete an existing team from the Miro organization, requiring Company Admin privileges and Enterprise plan access.
-        
+        Deletes a team within an organization using the specified organization and team IDs.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+
         Returns:
-            JSON response from the Miro API containing deletion confirmation details.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid permissions, missing team, or rate limits (Level 4). Raised by response.raise_for_status().
-        
+            Any: API response data.
+
         Tags:
-            delete, teams, management, enterprise, async_job, important
+            Teams
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team(self,
-                    org_id: Annotated[str, '(Required) The id of the Organization.'],
-                    team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
+    def update_team(self, org_id, team_id, name=None) -> Any:
         """
-        Updates an existing team by changing its name.
-
-        Note: This API is available only for Enterprise plan users and requires
-        the user to have the role of a Company Admin.
+        Updates specific properties of a team within an organization using partial modifications.
 
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            name: The new name of the team. If None, the 'name' property is not
-                included in the request body.
+            org_id (string): org_id
+            team_id (string): team_id
+            name (string): name
+                Example:
+                ```json
+                {
+                  "name": "My Team"
+                }
+                ```
 
         Returns:
-            The JSON response from the server after updating the team (typically
-            representing the updated team object).
-
-        Raises:
-            requests.HTTPError: Raised if there is an HTTP request error, such as
-                                a bad status code (4xx or 5xx).
+            Any: API response data.
 
         Tags:
-            update, team, management, enterprise, important
+            Teams
         """
-        # Construct the request body based on provided optional parameters
-        request_body = {}
-
-        path = f"/v2/orgs/{org_id}/teams/{team_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        request_body = {
+            'name': name,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
-
-        response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+        response.raise_for_status()
         return response.json()
 
-    def list_team_members(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], limit: Annotated[Any, ''] = None, cursor: Annotated[Any, 'An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request.'] = None, role: Annotated[Any, '\nRole query. Filters members by role using full word match. Accepted values are:\n* "member":     Team member with full member permissions.\n* "admin":      Admin of a team. Team member with permission to manage team.\n* "non_team":   External user, non-team user.\n* "team_guest": Team-guest user, user with access only to a team without access to organization.\n'] = None) -> Any:
+    def list_team_members(self, org_id, team_id, limit=None, cursor=None, role=None) -> Any:
         """
-        Retrieves team members with pagination and optional role filtering, requiring specific permissions and rate limits.
-        
+        Retrieves a paginated list of members for a specified team within an organization, optionally filtered by role.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            cursor: An indicator of the page position in results. Leave empty for first page, use previous response's cursor for subsequent pages.
-            limit: Maximum number of team members to retrieve per request. If unspecified, uses API's default parameter value.
-            role: Role filter (full-word match): 'member' (full permissions), 'admin' (team management), 'non_team' (external users), 'team_guest' (team-only access).
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            limit (string): The "limit" parameter specifies the maximum number of team members to return in a single response for the specified organization and team. Example: '100'.
+            cursor (string): An indicator of the position of a page in the full set of results. To obtain the first page leave it empty. To obtain subsequent pages set it to the value returned in the cursor field of the previous request. Example: '3055557345821140500'.
+            role (string): Role query. Filters members by role using full word match. Accepted values are:
+        * "member": Team member with full member permissions.
+        * "admin": Admin of a team. Team member with permission to manage team.
+        * "non_team": External user, non-team user.
+        * "team_guest": Team-guest user, user with access only to a team without access to organization.
+
         Returns:
-            JSON response containing paginated team members and next-page cursor.
-        
-        Raises:
-            HTTPError: If the API request fails due to invalid permissions, rate limits, or server errors.
-        
+            Any: API response data.
+
         Tags:
-            list, team-members, pagination, management, enterprise, api, important
+            Team Members
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/members"
-        url = f"{self.base_url}{path}"
-        query_params = {
-                "limit": limit,
-                "cursor": cursor,
-                "role": role,
-            }
-        query_params = {k: v for k, v in query_params.items() if v is not None}
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/members"
+        query_params = {k: v for k, v in [('limit', limit), ('cursor', cursor), ('role', role)] if v is not None}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def invite_team_members(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], email: Annotated[Any, ''] = None, role: Annotated[Any, ''] = None) -> Any:
+    def invite_team_members(self, org_id, team_id, email=None, role=None) -> Any:
         """
-        Invites a new Miro user to an existing team via email, requiring the user to exist in the organization (team invites via SCIM/external identity providers require separate implementation).
-        
+        Adds a member to a specific team within an organization using the API endpoint at "/v2/orgs/{org_id}/teams/{team_id}/members".
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            email: Email address of the user to invite (must already exist in organization)
-            role: Team role to assign to invited member
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            email (string): email Example: 'user@miro.com'.
+            role (string): role
+                Example:
+                ```json
+                {
+                  "email": "user@miro.com",
+                  "role": "member"
+                }
+                ```
+
         Returns:
-            API response data containing invitation details
-        
-        Raises:
-            requests.HTTPError: Raised for HTTP request failures (e.g., invalid scope, unauthorized access, or rate limit exceeded)
-        
+            Any: API response data.
+
         Tags:
-            team-members, invite, management, enterprise, important
+            Team Members
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
         request_body = {
-            "email": email,
-            "role": role,
+            'email': email,
+            'role': role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/members"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/members"
         query_params = {}
         response = self._post(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team_member(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], member_id: Annotated[str, '(Required) The id of the Team Member']) -> Any:
+    def get_team_member(self, org_id, team_id, member_id) -> Any:
         """
-        Retrieves a team member.
-        
+        Retrieves information about a specific team member using the provided organization, team, and member identifiers.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            member_id: The id of the Team Member.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            member_id (string): member_id
+
         Returns:
-            A JSON response containing the team member details.
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the HTTP request encounters an error, such as a 4xx or 5xx status code.
-        
+            Any: API response data.
+
         Tags:
-            retrieve, team-member, enterprise, important
+            Team Members
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def delete_team_member_from_team(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], member_id: Annotated[str, '(Required) The id of the Team Member']) -> Any:
+    def delete_team_member_from_team(self, org_id, team_id, member_id) -> Any:
         """
-        Deletes a team member from a team.
-        
+        Removes a member from a specified team in an organization using the GitHub API.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            member_id: The id of the Team Member.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            member_id (string): member_id
+
         Returns:
-            The JSON response from the delete operation.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request encounters an error (e.g., 404 Not Found, 500 Internal Server Error).
-        
+            Any: API response data.
+
         Tags:
-            delete, team-member, enterprise-only, important
+            Team Members
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
         query_params = {}
         response = self._delete(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team_member(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], member_id: Annotated[str, '(Required) The id of the Team Member'], role: Annotated[Any, ''] = None) -> Any:
+    def update_team_member(self, org_id, team_id, member_id, role=None) -> Any:
         """
-        Updates the role of a team member within an organization, requiring Company Admin permissions and a specific scope.
-        
+        Updates the membership details of a team member in an organization using the GitHub API.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            member_id: The id of the Team Member.
-            role: New role to assign to the team member. Must comply with organizational role definitions.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            member_id (string): member_id
+            role (string): role
+                Example:
+                ```json
+                {
+                  "role": "member"
+                }
+                ```
+
         Returns:
-            dict: Updated team member data from the API response after successful role modification.
-        
-        Raises:
-            HTTPError: If the API request fails due to insufficient permissions, invalid role, or authorization issues.
-        
+            Any: API response data.
+
         Tags:
-            update, team-members, management, enterprise-only, important, async-job, api-call
+            Team Members
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        if member_id is None:
+            raise ValueError("Missing required parameter 'member_id'")
         request_body = {
-            "role": role,
+            'role': role,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_default_team_settings(self, org_id: Annotated[str, '(Required) The id of an Organization.']) -> Any:
+    def get_default_team_settings(self, org_id) -> Any:
         """
-        Retrieve default team settings for an existing organization. Requires Company Admin privileges.
-        
+        Retrieves the default team settings for an organization via the GitHub API.
+
         Args:
-            org_id: The id of an Organization.
-        
+            org_id (string): org_id
+
         Returns:
-            dict: Default team settings parsed from the API response JSON.
-        
-        Raises:
-            requests.HTTPError: If the API request fails due to invalid scope, insufficient permissions, or rate limits.
-        
+            Any: API response data.
+
         Tags:
-            team-settings, management, enterprise, api, important
+            Team Settings
         """
-        path = f"/v2/orgs/{org_id}/default_teams_settings"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/default_teams_settings"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def get_team_settings1(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.']) -> Any:
+    def get_team_settings1(self, org_id, team_id) -> Any:
         """
-        Retrieves team settings for an existing team. Requires enterprise plan and Company Admin role.
-        
+        Retrieves team settings for a specified team within an organization using the "GET" method.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+
         Returns:
-            dict: JSON response containing team settings
-        
-        Raises:
-            requests.exceptions.HTTPError: Raised if the API request fails (e.g., unauthorized access or invalid endpoint)
-        
+            Any: API response data.
+
         Tags:
-            get, team-settings, read, management, enterprise, important
+            Team Settings
         """
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/settings"
-        url = f"{self.base_url}{path}"
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/settings"
         query_params = {}
         response = self._get(url, params=query_params)
         response.raise_for_status()
         return response.json()
 
-    def update_team_settings1(self, org_id: Annotated[str, '(Required) The id of the Organization.'], team_id: Annotated[str, '(Required) The id of the Team.'], teamAccountDiscoverySettings: Annotated[dict[str, Any], ''] = None, teamCollaborationSettings: Annotated[dict[str, Any], ''] = None, teamCopyAccessLevelSettings: Annotated[dict[str, Any], ''] = None, teamInvitationSettings: Annotated[dict[str, Any], ''] = None, teamSharingPolicySettings: Annotated[dict[str, Any], ''] = None) -> Any:
+    def update_team_settings1(self, org_id, team_id, teamAccountDiscoverySettings=None, teamCollaborationSettings=None, teamCopyAccessLevelSettings=None, teamInvitationSettings=None, teamSharingPolicySettings=None) -> Any:
         """
-        Updates team settings for an existing team.
-        
+        Updates settings for a team within an organization using the GitHub API and returns a status message.
+
         Args:
-            org_id: The id of the Organization.
-            team_id: The id of the Team.
-            teamAccountDiscoverySettings: A dictionary containing team account discovery settings.
-            teamCollaborationSettings: A dictionary containing team collaboration settings.
-            teamCopyAccessLevelSettings: A dictionary containing team copy access level settings.
-            teamInvitationSettings: A dictionary containing team invitation settings.
-            teamSharingPolicySettings: A dictionary containing team sharing policy settings.
-        
+            org_id (string): org_id
+            team_id (string): team_id
+            teamAccountDiscoverySettings (object): teamAccountDiscoverySettings
+            teamCollaborationSettings (object): teamCollaborationSettings
+            teamCopyAccessLevelSettings (object): teamCopyAccessLevelSettings
+            teamInvitationSettings (object): teamInvitationSettings
+            teamSharingPolicySettings (object): teamSharingPolicySettings
+                Example:
+                ```json
+                {
+                  "teamAccountDiscoverySettings": {
+                    "accountDiscovery": "hidden"
+                  },
+                  "teamCollaborationSettings": {
+                    "coOwnerRole": "enabled"
+                  },
+                  "teamCopyAccessLevelSettings": {
+                    "copyAccessLevel": "anyone",
+                    "copyAccessLevelLimitation": "anyone"
+                  },
+                  "teamInvitationSettings": {
+                    "inviteExternalUsers": "allowed",
+                    "whoCanInvite": "only_org_admins"
+                  },
+                  "teamSharingPolicySettings": {
+                    "allowListedDomains": [
+                      "mollit id",
+                      "irure id pariatur reprehenderit"
+                    ],
+                    "createAssetAccessLevel": "company_admins",
+                    "defaultBoardAccess": "private",
+                    "defaultBoardSharingAccess": "team_members_with_editing_rights",
+                    "defaultOrganizationAccess": "private",
+                    "defaultProjectAccess": "private",
+                    "moveBoardToAccount": "allowed",
+                    "restrictAllowedDomains": "enabled",
+                    "sharingOnAccount": "allowed",
+                    "sharingOnOrganization": "allowed",
+                    "sharingViaPublicLink": "allowed"
+                  }
+                }
+                ```
+
         Returns:
-            The updated team settings in JSON format.
-        
-        Raises:
-            requests.HTTPError: Raised if the HTTP request fails due to a network problem or the server returns an unsuccessful status code.
-        
+            Any: API response data.
+
         Tags:
-            update, team-settings, enterprise, important
+            Team Settings
         """
+        if org_id is None:
+            raise ValueError("Missing required parameter 'org_id'")
+        if team_id is None:
+            raise ValueError("Missing required parameter 'team_id'")
         request_body = {
-            "teamAccountDiscoverySettings": teamAccountDiscoverySettings,
-            "teamCollaborationSettings": teamCollaborationSettings,
-            "teamCopyAccessLevelSettings": teamCopyAccessLevelSettings,
-            "teamInvitationSettings": teamInvitationSettings,
-            "teamSharingPolicySettings": teamSharingPolicySettings,
+            'teamAccountDiscoverySettings': teamAccountDiscoverySettings,
+            'teamCollaborationSettings': teamCollaborationSettings,
+            'teamCopyAccessLevelSettings': teamCopyAccessLevelSettings,
+            'teamInvitationSettings': teamInvitationSettings,
+            'teamSharingPolicySettings': teamSharingPolicySettings,
         }
         request_body = {k: v for k, v in request_body.items() if v is not None}
-        path = f"/v2/orgs/{org_id}/teams/{team_id}/settings"
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/v2/orgs/{org_id}/teams/{team_id}/settings"
         query_params = {}
         response = self._patch(url, data=request_body, params=query_params)
         response.raise_for_status()
         return response.json()
-
 
     def list_tools(self):
         return [
-            
             self.revoke_token_v1,
             self.get_access_token_information,
             self.get_audit_logs,
@@ -4216,8 +5005,6 @@ class MiroApp(APIApplication):
             self.get_document_item,
             self.delete_document_item,
             self.update_document_item_using_url,
-            self.create_document_item_using_file_from_device,
-            self.update_document_item_using_file_from_device,
             self.create_embed_item,
             self.get_embed_item,
             self.delete_embed_item,
@@ -4226,8 +5013,6 @@ class MiroApp(APIApplication):
             self.get_image_item,
             self.delete_image_item,
             self.update_image_item_using_url,
-            self.create_image_item_using_file_from_device,
-            self.update_image_item_using_file_from_device,
             self.get_items_on_board,
             self.get_specific_item_on_board,
             self.delete_item,
@@ -4253,7 +5038,6 @@ class MiroApp(APIApplication):
             self.delete_text_item,
             self.update_text_item,
             self.create_items_in_bulk,
-            self.create_items_in_bulk_using_file_from_device,
             self.create_frame,
             self.get_frame,
             self.delete_frame,
@@ -4275,4 +5059,45 @@ class MiroApp(APIApplication):
             self.delete_shape_item1,
             self.update_shape_item1,
             self.get_all_groups_on_aboard,
+            self.create_group,
+            self.get_items_of_agroup_by_id,
+            self.get_agroup_by_its_id,
+            self.updates_agroup_with_new_items,
+            self.ungroup_items,
+            self.deletes_the_group,
+            self.revoke_token_v2,
+            self.get_tags_from_item,
+            self.get_tags_from_board,
+            self.create_tag,
+            self.get_tag,
+            self.delete_tag,
+            self.update_tag,
+            self.get_items_by_tag,
+            self.attach_tag_to_item,
+            self.remove_tag_from_item,
+            self.list_of_projects,
+            self.create_project,
+            self.get_project,
+            self.delete_project,
+            self.update_project,
+            self.get_project_settings,
+            self.update_project_settings,
+            self.list_of_project_members,
+            self.add_member_in_aproject,
+            self.get_project_member,
+            self.remove_project_member,
+            self.update_project_member,
+            self.list_teams,
+            self.create_team,
+            self.get_team,
+            self.delete_team,
+            self.update_team,
+            self.list_team_members,
+            self.invite_team_members,
+            self.get_team_member,
+            self.delete_team_member_from_team,
+            self.update_team_member,
+            self.get_default_team_settings,
+            self.get_team_settings1,
+            self.update_team_settings1
         ]
