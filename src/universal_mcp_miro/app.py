@@ -4,7 +4,7 @@ from universal_mcp.integrations import Integration
 
 class MiroApp(APIApplication):
     def __init__(self, integration: Integration = None, **kwargs) -> None:
-        super().__init__(name='miroapp', integration=integration, **kwargs)
+        super().__init__(name='miro', integration=integration, **kwargs)
         self.base_url = "https://api.miro.com"
 
     def revoke_token_v1(self, access_token=None) -> Any:
