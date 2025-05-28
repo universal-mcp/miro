@@ -1,10 +1,10 @@
-# Miro MCP Server
+# MiroApp MCP Server
 
-An MCP Server for the Miro API.
+An MCP Server for the MiroApp API.
 
 ## 🛠️ Tool List
 
-This is automatically generated from OpenAPI schema for the Miro API.
+This is automatically generated from OpenAPI schema for the MiroApp API.
 
 
 | Tool | Description |
